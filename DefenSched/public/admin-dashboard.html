@@ -1579,11 +1579,6 @@
       </select>
     </td>
   </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No appointments</td></tr>';
-        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
-        Delete
-      </button>
-    </td>
-  </tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">No appointments</td></tr>';
     }
 
     async function inlineUpdateApptStatus(id, status) {
@@ -1686,7 +1681,7 @@
 
     // ── SYSTEM SETTINGS ───────────────────────────────────────────────
     async function loadSettings() {
-      const res = await fetch('/api/settings');
+      const res = await fetch('/api/honoraria/settings');
       const form = document.getElementById('settings-form');
       if (!res.ok) { form.innerHTML = `<div class="db-empty">Settings API not available.</div>`; return }
       const { settings } = await res.json();
