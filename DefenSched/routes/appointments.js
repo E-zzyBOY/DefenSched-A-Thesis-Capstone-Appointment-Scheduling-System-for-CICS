@@ -98,7 +98,7 @@ router.get('/check-conflict', requireAuth, (req, res) => {
     : { ok: true,  message: 'Adviser is available.' };
 
   const pIds = panelist_ids ? panelist_ids.split(',').map(Number).filter(Boolean) : [];
-  let panelists = { ok: false, message: 'No panelists selected.', details: [] };
+  let panelists = { ok: true, message: 'No panelists selected — admin will assign later.', details: [] };
   if (pIds.length) {
     let allOk = true;
     const details = pIds.map(pid => {
@@ -136,8 +136,9 @@ router.get('/check-conflict', requireAuth, (req, res) => {
 router.post('/', requireAuth, (req, res) => {
   const { userId } = req.session;
   const { group_name, adviser_id, panelist_ids, date, time_slot, venue_id, notes } = req.body;
-  if (!group_name || !adviser_id || !date || !time_slot || !venue_id || !panelist_ids?.length)
+  if (!group_name || !adviser_id || !date || !time_slot || !venue_id)
     return res.status(400).json({ error: 'All fields are required.' });
+  const safePanelistIds = Array.isArray(panelist_ids) ? panelist_ids.filter(Boolean) : [];
 
   if (db.prepare(`SELECT id FROM appointments WHERE adviser_id=? AND date=? AND time_slot=? AND status!='cancelled'`).get(adviser_id, date, time_slot))
     return res.status(409).json({ error: 'Conflict: Adviser is not available at that time.' });
@@ -151,7 +152,7 @@ router.post('/', requireAuth, (req, res) => {
   `).run(group_name, userId, adviser_id, date, time_slot, venue_id, notes || null);
 
   const insPan = db.prepare('INSERT INTO appointment_panelists (appointment_id, panelist_id) VALUES (?, ?)');
-  for (const pid of panelist_ids) insPan.run(apptId, pid);
+  for (const pid of safePanelistIds) insPan.run(apptId, pid);
 
   // Notify adviser, panelists, and submitting student
   notify(parseInt(adviser_id), `New defense scheduled: ${group_name} on ${date} at ${time_slot}.`, 'info');

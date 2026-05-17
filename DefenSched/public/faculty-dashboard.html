@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DefenSched — Faculty Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DefenSched — Faculty Dashboard</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
@@ -785,9 +785,12 @@
         <div class="user-name" id="user-display-name">Dr. R. Santos</div>
         <div class="user-role">Faculty · Adviser &amp; Panelist</div>
       </div>
-      <button id="theme-toggle" title="Toggle Theme" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
+      <button id="theme-toggle" title="Toggle Theme"
+        style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
         <svg id="theme-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
       <button id="logout-btn" title="Logout"
@@ -1390,7 +1393,7 @@
     }
     async function markAllRead() {
       await fetch('/api/notifications/read-all', { method: 'PUT' });
-        await fetchAll();
+      await fetchAll();
       loadNotifications();
       showToast('All marked as read', 'success');
     }
