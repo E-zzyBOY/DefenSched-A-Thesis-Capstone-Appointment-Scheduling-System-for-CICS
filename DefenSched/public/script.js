@@ -380,16 +380,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function markNotifRead(id) {
+    window.markNotifRead = async function markNotifRead(id) {
         await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
         await loadNotifications();
-    }
+    };
 
-    async function deleteNotification(id) {
+    window.deleteNotification = async function deleteNotification(id) {
         if (!confirm('Delete this notification?')) return;
         await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
         await loadNotifications();
-    }
+    };
 
     async function loadDashboard() {
         try {

@@ -199,7 +199,7 @@ router.post('/', requireAuth, requireActive, (req, res) => {
   notify(userId, 'Appointment submitted. Upload your manuscript to confirm.', 'success');
 
   // Notify all admin users about the new booking
-  const admins = db.prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1").all();
+  const admins = db.prepare("SELECT id FROM users WHERE role = 'admin' AND status = 'active'").all();
   for (const admin of admins) {
     notify(admin.id, `New appointment request from ${group_name} on ${date} at ${time_slot}.`, 'info');
   }

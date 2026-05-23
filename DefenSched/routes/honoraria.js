@@ -12,7 +12,7 @@ router.get('/rates', requireAuth, requireActive, (req, res) => {
 });
 
 // POST /api/honoraria/rates — admin only
-router.post('/rates', requireRole('admin'), (req, res) => {
+router.post('/rates', requireAuth, requireActive, requireRole('admin'), (req, res) => {
   const { panelist_rate, adviser_rate } = req.body;
   if (!panelist_rate || !adviser_rate)
     return res.status(400).json({ error: 'Both rates are required.' });

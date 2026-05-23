@@ -30,7 +30,7 @@ router.post('/register', (req, res) => {
     `).run(name, email.toLowerCase().trim(), hashed, role, group_name || null, isGroup, membersJson, 'pending');
 
     // Notify all admins in the system about the new signup
-    const admins = db.prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1").all();
+    const admins = db.prepare("SELECT id FROM users WHERE role = 'admin' AND status = 'active'").all();
     const noteStmt = db.prepare('INSERT INTO notifications (user_id, message, type) VALUES (?, ?, ?)');
     for (const admin of admins) {
       noteStmt.run(admin.id, `New registration: ${name} (${email}, role: ${role}). Please review and approve.`, 'info');

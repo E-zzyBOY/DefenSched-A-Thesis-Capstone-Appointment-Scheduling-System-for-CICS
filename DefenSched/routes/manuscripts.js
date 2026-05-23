@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['.pdf', '.docx', '.doc'];
     if (allowed.includes(path.extname(file.originalname).toLowerCase())) cb(null, true);
@@ -45,7 +45,6 @@ router.post('/upload/:appointmentId', requireAuth, requireActive, upload.single(
     return res.status(403).json({ error: 'You can only upload for your own appointment.' });
   if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
 
-  // Remove old manuscript file if exists
   const existing = db.prepare('SELECT * FROM manuscripts WHERE appointment_id = ?').get(appointmentId);
   if (existing) {
     const oldPath = path.join(UPLOADS_DIR, existing.filename);
@@ -58,7 +57,6 @@ router.post('/upload/:appointmentId', requireAuth, requireActive, upload.single(
     VALUES (?, ?, ?, ?)
   `).run(appointmentId, req.file.filename, req.file.originalname, req.file.size);
 
-  // Confirm the appointment and notify stakeholders
   db.prepare(`UPDATE appointments SET manuscript_uploaded = 1, status = 'confirmed', updated_at = ? WHERE id = ?`)
     .run(new Date().toISOString(), appointmentId);
 
@@ -74,7 +72,7 @@ router.post('/upload/:appointmentId', requireAuth, requireActive, upload.single(
   });
 });
 
-// GET /api/manuscripts/list-by-faculty — all manuscripts for logged-in faculty
+// GET /api/manuscripts/list-by-faculty — MUST be before /:appointmentId
 router.get('/list-by-faculty', requireAuth, requireActive, (req, res) => {
   const { userId, role } = req.session;
   if (role !== 'faculty') return res.status(403).json({ error: 'Faculty only.' });
@@ -93,14 +91,7 @@ router.get('/list-by-faculty', requireAuth, requireActive, (req, res) => {
   res.json({ manuscripts });
 });
 
-// GET /api/manuscripts/:appointmentId — get manuscript info
-router.get('/:appointmentId', requireAuth, requireActive, (req, res) => {
-  const ms = db.prepare('SELECT * FROM manuscripts WHERE appointment_id = ?').get(req.params.appointmentId);
-  if (!ms) return res.status(404).json({ error: 'No manuscript found.' });
-  res.json({ manuscript: ms });
-});
-
-// GET /api/manuscripts/download/:id — download file
+// GET /api/manuscripts/download/:id — MUST be before /:appointmentId
 router.get('/download/:id', requireAuth, requireActive, (req, res) => {
   const ms = db.prepare('SELECT * FROM manuscripts WHERE id = ?').get(req.params.id);
   if (!ms) return res.status(404).json({ error: 'File not found.' });
@@ -109,29 +100,32 @@ router.get('/download/:id', requireAuth, requireActive, (req, res) => {
   res.download(filePath, ms.original_name);
 });
 
+// GET /api/manuscripts/:appointmentId — get manuscript info (must be AFTER specific routes)
+router.get('/:appointmentId', requireAuth, requireActive, (req, res) => {
+  const ms = db.prepare('SELECT * FROM manuscripts WHERE appointment_id = ?').get(req.params.appointmentId);
+  if (!ms) return res.status(404).json({ error: 'No manuscript found.' });
+  res.json({ manuscript: ms });
+});
+
 // DELETE /api/manuscripts/:id — delete manuscript
-router.delete('/:id', requireAuth, (req, res) => {
+router.delete('/:id', requireAuth, requireActive, (req, res) => {
   const ms = db.prepare('SELECT m.*, a.student_id, a.status FROM manuscripts m JOIN appointments a ON m.appointment_id = a.id WHERE m.id = ?').get(req.params.id);
   if (!ms) return res.status(404).json({ error: 'Manuscript not found.' });
-  
-  // Only the student who uploaded it can delete it
+
   if (ms.student_id !== req.session.userId) {
     return res.status(403).json({ error: 'You can only delete your own manuscripts.' });
   }
-  
-  // Only allow deletion if appointment is still pending
+
   if (ms.status !== 'pending') {
     return res.status(403).json({ error: 'Cannot delete manuscript once appointment is confirmed. Contact your adviser if you need to re-upload.' });
   }
-  
-  // Delete physical file
+
   const filePath = path.join(UPLOADS_DIR, ms.filename);
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  
-  // Delete database record
+
   db.prepare('DELETE FROM manuscripts WHERE id = ?').run(req.params.id);
   db.prepare('UPDATE appointments SET manuscript_uploaded = 0 WHERE id = ?').run(ms.appointment_id);
-  
+
   res.json({ success: true, message: 'Manuscript deleted.' });
 });
 

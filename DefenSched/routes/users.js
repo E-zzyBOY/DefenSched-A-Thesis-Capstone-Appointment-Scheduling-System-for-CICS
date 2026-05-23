@@ -31,7 +31,7 @@ router.get('/:id', requireAuth, requireActive, (req, res) => {
 });
 
 // POST /api/users — admin: create user
-router.post('/', requireRole('admin'), (req, res) => {
+router.post('/', requireAuth, requireActive, requireRole('admin'), (req, res) => {
   const { name, email, password, role, group_name } = req.body;
   if (!name || !email || !password || !role)
     return res.status(400).json({ error: 'name, email, password, and role are required.' });
@@ -49,7 +49,7 @@ router.post('/', requireRole('admin'), (req, res) => {
 });
 
 // PUT /api/users/:id — admin: edit user
-router.put('/:id', requireRole('admin'), (req, res) => {
+router.put('/:id', requireAuth, requireActive, requireRole('admin'), (req, res) => {
   const { name, email, role, group_name, is_active, password } = req.body;
   const updates = {};
   if (name)       updates.name       = name;
@@ -68,7 +68,7 @@ router.put('/:id', requireRole('admin'), (req, res) => {
 });
 
 // DELETE /api/users/:id — hard delete (FK-safe)
-router.delete('/:id', requireRole('admin'), (req, res) => {
+router.delete('/:id', requireAuth, requireActive, requireRole('admin'), (req, res) => {
   const uid = parseInt(req.params.id);
   const user = db.prepare('SELECT id, role FROM users WHERE id = ?').get(uid);
   if (!user) return res.status(404).json({ error: 'User not found.' });
