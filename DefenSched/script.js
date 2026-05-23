@@ -6,7 +6,24 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
+    // ============================================================
+    // 0. GOOGLE OAUTH ERROR HANDLER
+    // Show error banner if redirected back with ?googleError= in URL
+    // ============================================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleError = urlParams.get('googleError');
+    if (googleError) {
+        const banner = document.getElementById('google-error-banner');
+        const text   = document.getElementById('google-error-text');
+        if (banner && text) {
+            text.textContent = decodeURIComponent(googleError);
+            banner.style.display = 'flex';
+        }
+        // Clean the URL so the error doesn't persist on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     // ============================================================
     // 1. STATE & MOCK DATA
     // ============================================================

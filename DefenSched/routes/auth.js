@@ -1,15 +1,21 @@
 'use strict';
 
 const express = require('express');
-const router  = express.Router();
-const bcrypt  = require('bcryptjs');
-const db      = require('../database');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const db = require('../database');
+const passport = require('passport');
 
 // POST /api/auth/register — Users start with 'pending' status; admin must approve (requireActive middleware blocks access until approved)
 router.post('/register', (req, res) => {
   const { name, email, password, role, is_group, group_name, leader_name, member_names } = req.body;
   if (!name || !email || !password || !role)
     return res.status(400).json({ error: 'All fields are required.' });
+
+  // Enforce institutional email format — must be a complete @cics.edu.ph address
+  const emailRegex = /^[a-zA-Z0-9._%+\-]+@cics\.edu\.ph$/i;
+  if (!emailRegex.test(email.trim()))
+    return res.status(400).json({ error: 'Only institutional emails ending with @cics.edu.ph are accepted.' });
 
   // Build members JSON for group student accounts
   let membersJson = null;
@@ -39,10 +45,10 @@ router.post('/register', (req, res) => {
     // Also notify the registrant that their account is pending
     noteStmt.run(id, 'Your account has been created and is pending administrator approval. You will be notified when approved.', 'info');
 
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       user_id: id,
-      message: 'Account created successfully. Please wait for admin approval before logging in.' 
+      message: 'Account created successfully. Please wait for admin approval before logging in.'
     });
   } catch (e) {
     if (e.message.includes('UNIQUE'))
@@ -58,7 +64,7 @@ router.post('/login', (req, res) => {
     return res.status(400).json({ error: 'Email and password are required.' });
 
   const user = db.prepare('SELECT * FROM users WHERE email = ? AND is_active = 1')
-                 .get(email.toLowerCase().trim());
+    .get(email.toLowerCase().trim());
 
   if (!user || !bcrypt.compareSync(password, user.password_hash))
     return res.status(401).json({ error: 'Invalid email or password.' });
@@ -75,7 +81,7 @@ router.post('/login', (req, res) => {
   }
 
   req.session.userId = user.id;
-  req.session.role   = user.role;
+  req.session.role = user.role;
 
   res.json({
     success: true,
@@ -92,9 +98,33 @@ router.post('/logout', (req, res) => {
 router.get('/me', (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ error: 'Not authenticated.' });
   const user = db.prepare('SELECT id, name, email, role, group_name, is_group, members, status FROM users WHERE id = ?')
-                 .get(req.session.userId);
+    .get(req.session.userId);
   if (!user) return res.status(401).json({ error: 'User not found.' });
   res.json({ user });
 });
+
+// GET /api/auth/google — Start Google OAuth flow (restricted to @cics.edu.ph accounts)
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['email', 'profile'],
+    hd: 'cics.edu.ph' // Hint to Google to show only cics.edu.ph accounts
+  })
+);
+
+// GET /api/auth/google/callback — Google redirects here after authentication
+router.get('/google/callback',
+  passport.authenticate('google', { session: false, failWithError: true }),
+  (req, res) => {
+    // Success — set session the same way as manual login
+    req.session.userId = req.user.id;
+    req.session.role   = req.user.role;
+    res.redirect('/');
+  },
+  (err, req, res, next) => {
+    // Failed — redirect back to login with error message in URL
+    const msg = encodeURIComponent(err?.message || 'Google login failed. Please try again.');
+    res.redirect(`/?googleError=${msg}`);
+  }
+);
 
 module.exports = router;
