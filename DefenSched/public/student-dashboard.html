@@ -1032,14 +1032,14 @@
         <div class="page-title" id="page-title">Overview</div>
         <div class="page-sub" id="page-sub">AY 2025–2026 · Second Semester</div>
       </div>
-      <button class="btn btn-primary" id="header-book-btn"
+      <!--<button class="btn btn-primary" id="header-book-btn"
         onclick="switchPanel('book', document.querySelector('[data-panel=book]'))">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" />
           <path d="M16 2v4M8 2v4M3 10h18" stroke-width="2" />
         </svg>
         Book a defense
-      </button>
+      </button>-->
     </div>
 
     <!-- ══ PANEL: Overview ══════════════════════════════════════ -->
@@ -1500,7 +1500,7 @@
     function renderStatusBanner() {
       const banner = document.getElementById('status-banner');
       const a = _appointment;
-      if (!a) {
+      if (!a || a.status == 'cancelled' || a.status == 'rejected' || a.status == 'completed') {
         banner.className = 'status-banner status-none';
         banner.innerHTML = `
       <div style="display:flex;align-items:center;gap:14px;">
@@ -1522,7 +1522,8 @@
       const isConfirmed = a.status === 'confirmed';
       const isPending = a.status === 'pending';
       const isRescheduled = a.status === 'rescheduled';
-      const bgClass = isConfirmed ? 'status-confirmed' : isPending ? 'status-pending' : isRescheduled ? 'status-rescheduled' : 'status-none';
+      const isCompleted = a.status == 'completed';
+      const bgClass = isConfirmed ? 'status-confirmed' : isPending ? 'status-pending' : isRescheduled ? 'status-rescheduled' : isCompleted ? 'status-completed' :'status-none';
       const color = isConfirmed ? 'var(--success)' : isPending ? 'var(--warning)' : isRescheduled ? 'var(--purple)' : 'var(--text3)';
       const iconBg = isConfirmed ? '#dcfce7' : isPending ? '#fef9c3' : isRescheduled ? 'var(--purple-bg)' : 'var(--surface2)';
       const icon = isConfirmed
