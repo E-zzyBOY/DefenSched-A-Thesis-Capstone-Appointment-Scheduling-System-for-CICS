@@ -2200,17 +2200,21 @@
         if (weekSelector && (weekSelector.options.length === 1 && weekSelector.options[0].text === 'Loading weeks...' || weekSelector.options.length === 0)) {
           weekSelector.innerHTML = '';
           const now = new Date();
+          // Get Monday of current week (proper calculation)
           const curMonday = new Date(now);
-          curMonday.setDate(now.getDate() - now.getDay() + 1);
-          const currentWeekVal = curMonday.toISOString().split('T')[0];
+          const day = curMonday.getDay();
+          const diff = curMonday.getDate() - day + (day === 0 ? -6 : 1);
+          curMonday.setDate(diff);
+          curMonday.setHours(0, 0, 0, 0);
+          const currentWeekVal = `${curMonday.getFullYear()}-${String(curMonday.getMonth()+1).padStart(2,'0')}-${String(curMonday.getDate()).padStart(2,'0')}`;
 
           for (let w = -2; w <= 12; w++) {
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() + (w * 7) - now.getDay() + 1);
+            const startOfWeek = new Date(curMonday);
+            startOfWeek.setDate(curMonday.getDate() + (w * 7));
             const endOfWeek = new Date(startOfWeek);
             endOfWeek.setDate(startOfWeek.getDate() + 4);
             const label = `Week of ${startOfWeek.toLocaleDateString('en-PH')} - ${endOfWeek.toLocaleDateString('en-PH')}`;
-            const value = startOfWeek.toISOString().split('T')[0];
+            const value = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth()+1).padStart(2,'0')}-${String(startOfWeek.getDate()).padStart(2,'0')}`;
             weekSelector.appendChild(new Option(label, value));
           }
           weekSelector.value = currentWeekVal;
@@ -2220,13 +2224,16 @@
         }
 
         const today = new Date();
-        const selectedWeekStart = weekSelector?.value || today.toISOString().split('T')[0];
+        const _t = today; const selectedWeekStart = weekSelector?.value || `${_t.getFullYear()}-${String(_t.getMonth()+1).padStart(2,'0')}-${String(_t.getDate()).padStart(2,'0')}`;
         const monday = new Date(selectedWeekStart + 'T00:00:00');
-        monday.setDate(monday.getDate() - monday.getDay() + 1);
+        // Ensure proper Monday calculation
+        const dayOfWeek = monday.getDay();
+        const diff = monday.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        monday.setDate(diff);
         const weekDates = days.map((d, i) => {
           const dt = new Date(monday);
           dt.setDate(monday.getDate() + i);
-          return dt.toISOString().split('T')[0];
+          return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
         });
 
         const dayAbbr = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };

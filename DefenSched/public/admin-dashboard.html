@@ -1360,9 +1360,11 @@
       </div>
       <div id="schedule-view-calendar" class="sub-panel">
         <div class="card">
-          <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <span style="font-size:12px;color:var(--text3)">Week:</span>
+            <button class="btn btn-outline btn-sm" id="cal-prev-week-btn" onclick="changeScheduleWeek(-1)">◀ Prev</button>
             <select id="calendar-week-selector" class="form-select" style="width:260px" onchange="loadScheduleCalendar()"><option>Loading weeks...</option></select>
+            <button class="btn btn-outline btn-sm" id="cal-next-week-btn" onclick="changeScheduleWeek(1)">Next ▶</button>
           </div>
           <div id="schedule-calendar-container" style="overflow-x:auto">
             <div class="skeleton"></div>
@@ -2036,9 +2038,11 @@
       if (weekSelector.options[0].text === 'Loading weeks...') {
         weekSelector.innerHTML = '';
         const today = new Date();
-        // Get Monday of current week
+        // Get Monday of current week (proper calculation)
         const currMonday = new Date(today);
-        currMonday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+        const day = currMonday.getDay();
+        const diff = currMonday.getDate() - day + (day === 0 ? -6 : 1);
+        currMonday.setDate(diff);
         currMonday.setHours(0, 0, 0, 0);
 
         let selectedIdx = 0;
@@ -2048,19 +2052,20 @@
           const endOfWeek = new Date(startOfWeek);
           endOfWeek.setDate(startOfWeek.getDate() + 4);
           const label = `Week of ${startOfWeek.toLocaleDateString('en-PH')} - ${endOfWeek.toLocaleDateString('en-PH')}`;
-          const value = startOfWeek.toISOString().split('T')[0];
+          const value = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth()+1).padStart(2,'0')}-${String(startOfWeek.getDate()).padStart(2,'0')}`;
           const opt = new Option(label, value);
           weekSelector.appendChild(opt);
           if (w === 0) selectedIdx = weekSelector.options.length - 1;
         }
         weekSelector.selectedIndex = selectedIdx;
       }
+      updateScheduleWeekButtons();
 
       const startDate = new Date(weekSelector.value + 'T00:00:00');
       const start = 8;
       const end = 17;
       const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-      const todayStr = new Date().toISOString().split('T')[0];
+      const _td = new Date(); const todayStr = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`;
 
       // Status color map for calendar items
       const statusColors = {
@@ -2076,7 +2081,7 @@
       days.forEach((day, di) => {
         const d = new Date(startDate);
         d.setDate(startDate.getDate() + di);
-        const dStr = d.toISOString().split('T')[0];
+        const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         const isToday = dStr === todayStr;
         const dayLabel = d.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' });
         html += `<div class="schedule-calendar-cell" style="background:var(--surface2);font-weight:600;padding:8px;text-align:center;${isToday ? 'border-bottom:2px solid var(--accent);color:var(--accent)' : ''}">${dayLabel}${isToday ? ' <span style="font-size:9px;opacity:.7">TODAY</span>' : ''}</div>`;
@@ -2090,7 +2095,7 @@
         days.forEach((day, di) => {
           const d = new Date(startDate);
           d.setDate(startDate.getDate() + di);
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
           const ts = `${String(h).padStart(2, '0')}:00-${String(h + 1).padStart(2, '0')}:00`;
           const appts = _appointments.filter(a => a.date === dateStr && a.time_slot === ts && a.status !== 'cancelled');
 
@@ -2110,6 +2115,29 @@
       html += '</div>';
 
       container.innerHTML = html;
+    }
+
+    function changeScheduleWeek(delta) {
+      const select = document.getElementById('calendar-week-selector');
+      if (!select) return;
+      const newIndex = select.selectedIndex + delta;
+      if (newIndex >= 0 && newIndex < select.options.length) {
+        select.selectedIndex = newIndex;
+        loadScheduleCalendar();
+      }
+    }
+
+    function updateScheduleWeekButtons() {
+      const select = document.getElementById('calendar-week-selector');
+      const prevBtn = document.getElementById('cal-prev-week-btn');
+      const nextBtn = document.getElementById('cal-next-week-btn');
+      if (!select) return;
+      if (prevBtn) {
+        prevBtn.disabled = (select.selectedIndex <= 0);
+      }
+      if (nextBtn) {
+        nextBtn.disabled = (select.selectedIndex >= select.options.length - 1);
+      }
     }
 
     function openApptDetailModal(apptId) {
