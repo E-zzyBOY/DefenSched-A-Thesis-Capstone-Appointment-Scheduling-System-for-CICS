@@ -33,11 +33,14 @@ router.get('/', requireAuth, requireActive, (req, res) => {
   let rows;
   if (role === 'admin') {
     rows = db.prepare(`
-      SELECT a.*, u.name student_name, u.members student_members, u.is_group student_is_group, f.name adviser_name, v.name venue_name
+      SELECT a.*, u.name student_name, u.members student_members, u.is_group student_is_group,
+             u.co_adviser_id co_adviser_id, ca.name co_adviser_name,
+             f.name adviser_name, v.name venue_name
       FROM appointments a
       JOIN users u ON a.student_id = u.id
       JOIN users f ON a.adviser_id = f.id
       JOIN venues v ON a.venue_id  = v.id
+      LEFT JOIN users ca ON u.co_adviser_id = ca.id
       ORDER BY a.date DESC, a.time_slot
     `).all();
   } else if (role === 'faculty') {
@@ -366,6 +369,15 @@ router.put('/:id/panelists', requireAuth, requireActive, requireRole('admin'), (
     const adviser = db.prepare('SELECT name FROM users WHERE id = ?').get(appt.adviser_id);
     return res.status(409).json({
       error: `${adviser?.name || 'The adviser'} is already assigned as the adviser for this group and cannot also serve as a panelist.`
+    });
+  }
+
+  // ←— Conflict guard: co-adviser cannot also be a panelist for the same group
+  const student = db.prepare('SELECT co_adviser_id FROM users WHERE id = ?').get(appt.student_id);
+  if (student?.co_adviser_id && pIds.includes(student.co_adviser_id)) {
+    const coAdviser = db.prepare('SELECT name FROM users WHERE id = ?').get(student.co_adviser_id);
+    return res.status(409).json({
+      error: `${coAdviser?.name || 'The co-adviser'} is already assigned as the co-adviser for this group and cannot also serve as a panelist.`
     });
   }
 

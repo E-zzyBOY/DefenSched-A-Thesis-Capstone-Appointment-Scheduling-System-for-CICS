@@ -36,7 +36,7 @@ router.post('/register', (req, res) => {
       membersJson,
       'pending',
       (role === 'student' && adviser_id) ? parseInt(adviser_id) || null : null,
-      (role === 'student' && co_adviser_id) ? parseInt(co_adviser_id) || null : null
+      (role === 'student' && co_adviser_id && parseInt(co_adviser_id) !== parseInt(adviser_id)) ? parseInt(co_adviser_id) || null : null
     );
 
     // Notify all admins in the system about the new signup

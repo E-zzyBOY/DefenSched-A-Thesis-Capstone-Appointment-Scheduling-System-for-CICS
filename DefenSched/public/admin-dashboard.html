@@ -1705,6 +1705,22 @@
         <div class="form-group" id="group-field"><label class="form-label">Group Name</label><input class="form-input"
             id="edit-group" placeholder="e.g. Group Alpha"></div>
       </div>
+      <div id="adviser-fields" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Adviser</label>
+            <select class="form-select" id="edit-adviser">
+              <option value="">— None —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Co-Adviser <span style="font-weight:400;color:var(--text3);text-transform:none">(optional)</span></label>
+            <select class="form-select" id="edit-coadviser">
+              <option value="">— None —</option>
+            </select>
+          </div>
+        </div>
+      </div>
       <div class="form-group"><label class="form-label">New Password <span
             style="font-weight:400;color:var(--text3);text-transform:none">(blank = keep current)</span></label><input
           class="form-input" id="edit-password" type="password" placeholder="••••••••"></div>
@@ -2401,35 +2417,40 @@
       const appt = _appointments.find(a => a.id === apptId);
       const currentPanelists = (appt?.panelists || []).map(p => p.id);
       const adviserId = appt?.adviser_id || null;
+      const coAdviserId = appt?.co_adviser_id || null;
 
       // Get all active faculty members
       const faculty = _allUsers.filter(u => u.role === 'faculty' && u.is_active !== 0);
 
-      renderPanelistList(faculty, currentPanelists, adviserId);
+      renderPanelistList(faculty, currentPanelists, adviserId, coAdviserId);
       updatePanelistCount();
       openModal('panelist-modal');
     }
 
-    function renderPanelistList(faculty, selectedIds, adviserId) {
+    function renderPanelistList(faculty, selectedIds, adviserId, coAdviserId) {
       const list = document.getElementById('panelist-list');
       if (!faculty.length) {
         list.innerHTML = '<div class="db-empty">No active faculty members found.</div>';
         return;
       }
       list.innerHTML = faculty.map(f => {
-        const isAdviser = f.id === adviserId;
-        const isChecked = !isAdviser && selectedIds.includes(f.id);
-        const disabledAttr = isAdviser ? 'disabled' : '';
-        const itemStyle = isAdviser ? 'opacity:.5;cursor:not-allowed;' : '';
-        const adviserBadge = isAdviser
+        const isAdviser   = f.id === adviserId;
+        const isCoAdviser = coAdviserId && f.id === coAdviserId;
+        const isBlocked   = isAdviser || isCoAdviser;
+        const isChecked   = !isBlocked && selectedIds.includes(f.id);
+        const disabledAttr = isBlocked ? 'disabled' : '';
+        const itemStyle    = isBlocked ? 'opacity:.5;cursor:not-allowed;' : '';
+        const badge = isAdviser
           ? `<span class="panelist-conflict-badge">⚠ Current Adviser</span>`
+          : isCoAdviser
+          ? `<span class="panelist-conflict-badge" style="background:rgba(167,139,250,.15);color:var(--purple,#a78bfa);border-color:rgba(167,139,250,.35);">⚠ Co-Adviser</span>`
           : '';
         return `
           <label class="panelist-item${isChecked ? ' selected' : ''}" for="pan-${f.id}" style="${itemStyle}">
             <input type="checkbox" id="pan-${f.id}" value="${f.id}" ${isChecked ? 'checked' : ''} ${disabledAttr}
               onchange="togglePanelistItem(this)">
             <div style="flex:1">
-              <div class="panelist-name" style="display:flex;align-items:center;gap:8px">${f.name}${adviserBadge}</div>
+              <div class="panelist-name" style="display:flex;align-items:center;gap:8px">${f.name}${badge}</div>
               <div class="panelist-email">${f.email}</div>
             </div>
           </label>`;
@@ -2489,11 +2510,22 @@
       document.getElementById('edit-group').value = u.group_name || '';
       document.getElementById('edit-password').value = '';
       document.getElementById('edit-status').value = u.is_active ? '1' : '0';
+      // Populate adviser / co-adviser dropdowns for students
+      if (u.role === 'student') {
+        const faculty = _allUsers.filter(f => f.role === 'faculty' && f.is_active !== 0);
+        const noneOpt = '<option value="">&#x2014; None &#x2014;</option>';
+        const opts = faculty.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+        document.getElementById('edit-adviser').innerHTML = noneOpt + opts;
+        document.getElementById('edit-coadviser').innerHTML = noneOpt + opts;
+        document.getElementById('edit-adviser').value = u.adviser_id || '';
+        document.getElementById('edit-coadviser').value = u.co_adviser_id || '';
+      }
       toggleGroupField(); openModal('user-modal');
     }
     function toggleGroupField() {
       const role = document.getElementById('edit-role').value;
       document.getElementById('group-field').style.display = role === 'student' ? '' : 'none';
+      document.getElementById('adviser-fields').style.display = role === 'student' ? '' : 'none';
     }
     async function saveUser() {
       const id = document.getElementById('edit-uid').value;
@@ -2508,6 +2540,16 @@
       if (!id && !password) { showToast('Password required for new users', 'error'); return }
       const body = { name, email, role, group_name: role === 'student' ? group : null, is_active: parseInt(status) };
       if (password) body.password = password;
+      // Save adviser/co-adviser for student users
+      if (role === 'student') {
+        const advVal = document.getElementById('edit-adviser').value;
+        const coAdvVal = document.getElementById('edit-coadviser').value;
+        body.adviser_id    = advVal   ? parseInt(advVal)   : null;
+        body.co_adviser_id = coAdvVal ? parseInt(coAdvVal) : null;
+        if (body.adviser_id && body.adviser_id === body.co_adviser_id) {
+          showToast('Adviser and Co-Adviser cannot be the same person.', 'error'); return;
+        }
+      }
       const btn = document.getElementById('save-user-btn');
       btn.disabled = true; btn.textContent = 'Saving…';
       try {
