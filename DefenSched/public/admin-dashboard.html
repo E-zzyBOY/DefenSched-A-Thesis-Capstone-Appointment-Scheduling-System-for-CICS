@@ -1470,12 +1470,11 @@
                 <th>Group tag</th>
                 <th>Defense date</th>
                 <th>Status</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody id="students-tbody">
               <tr>
-                <td colspan="8">
+                <td colspan="7">
                   <div class="skeleton"></div>
                 </td>
               </tr>
@@ -1544,12 +1543,11 @@
                 <th>Adviser sessions</th>
                 <th>Panel sessions</th>
                 <th>Honoraria</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody id="faculty-tbody">
               <tr>
-                <td colspan="8">
+                <td colspan="7">
                   <div class="skeleton"></div>
                 </td>
               </tr>
@@ -1608,23 +1606,20 @@
         <button class="btn btn-ghost" onclick="openRatesModal()">⚙ Update rates</button>
       </div>
       <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="stat-card">
-          <div class="stat-label">Panelist rate</div>
+        <div class="stat-card" style="cursor:pointer;transition:background .15s" onclick="openRatesModal()" title="Click to edit rates">
+          <div class="stat-label" style="display:flex;align-items:center;gap:6px">Panelist rate <span style="font-size:10px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(79,142,247,.2);border-radius:4px;padding:1px 5px">edit</span></div>
           <div class="stat-value" id="panelist-rate" style="font-size:22px">₱—</div>
-          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per
-            session</div>
+          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per session</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Adviser rate</div>
+        <div class="stat-card" style="cursor:pointer;transition:background .15s" onclick="openRatesModal()" title="Click to edit rates">
+          <div class="stat-label" style="display:flex;align-items:center;gap:6px">Adviser rate <span style="font-size:10px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(79,142,247,.2);border-radius:4px;padding:1px 5px">edit</span></div>
           <div class="stat-value" id="adviser-rate" style="font-size:22px">₱—</div>
-          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per
-            session</div>
+          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per session</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Grand total owed</div>
           <div class="stat-value" id="grand-total" style="font-size:22px">₱—</div>
-          <div class="stat-change stat-up"><span class="stat-dot" style="background:var(--success)"></span>All faculty
-          </div>
+          <div class="stat-change stat-up"><span class="stat-dot" style="background:var(--success)"></span>All faculty</div>
         </div>
       </div>
       <div class="card">
@@ -1820,6 +1815,44 @@
           <button class="btn btn-ghost" onclick="closeModal('panelist-modal')">Cancel</button>
           <button class="btn btn-primary" onclick="submitPanelistAssignment()" id="save-panelist-btn">Save Panelists</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Notification Detail -->
+  <div class="modal-overlay" id="notif-detail-modal">
+    <div class="modal" style="width:480px">
+      <div class="modal-header"><span class="modal-title">Notification</span><button class="modal-close" onclick="closeModal('notif-detail-modal')">×</button></div>
+      <div id="notif-detail-body" style="padding:4px 0 8px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('notif-detail-modal')">Close</button>
+        <button class="btn btn-danger" id="notif-detail-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Student Detail -->
+  <div class="modal-overlay" id="student-detail-modal">
+    <div class="modal" style="width:580px">
+      <div class="modal-header"><span class="modal-title" id="student-detail-title">Student Group</span><button class="modal-close" onclick="closeModal('student-detail-modal')">×</button></div>
+      <div id="student-detail-body" style="padding:2px 0 4px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('student-detail-modal')">Close</button>
+        <button class="btn btn-danger btn-sm" id="student-deactivate-btn">Deactivate</button>
+        <button class="btn btn-primary btn-sm" id="student-edit-btn">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Faculty Detail -->
+  <div class="modal-overlay" id="faculty-detail-modal">
+    <div class="modal" style="width:540px">
+      <div class="modal-header"><span class="modal-title" id="faculty-detail-title">Faculty Profile</span><button class="modal-close" onclick="closeModal('faculty-detail-modal')">×</button></div>
+      <div id="faculty-detail-body" style="padding:2px 0 4px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('faculty-detail-modal')">Close</button>
+        <button class="btn btn-danger btn-sm" id="faculty-deactivate-btn">Deactivate</button>
+        <button class="btn btn-primary btn-sm" id="faculty-edit-btn">Edit</button>
       </div>
     </div>
   </div>
@@ -2247,20 +2280,16 @@
       const students = _allUsers.filter(u => u.role === 'student' && u.is_active !== 0 && (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
       document.getElementById('students-tbody').innerHTML = students.length ? students.map(s => {
         const appt = _appointments.find(a => a.student_id === s.id) || null;
-        return `<tr>
+        return `<tr style="cursor:pointer;transition:background .12s" onclick='openStudentModal(${JSON.stringify(s).replace(/'/g,"&#39;")})' onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
       <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${s.id}</td>
-      <td>${s.name}</td>
+      <td><span style="color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(79,142,247,.4)">${s.name}</span></td>
       <td style="max-width:200px">${fmtMembers(s.members)}</td>
       <td style="font-size:12px;color:var(--text3)">${s.email}</td>
       <td style="font-size:12px;color:var(--text3)">${s.group_name || '—'}</td>
       <td>${appt ? `${fmtDate(appt.date)} · ${appt.time_slot || '—'}` : '<span style="color:var(--text3)">Not scheduled</span>'}</td>
       <td><span class="badge ${s.is_active ? 'badge-active' : 'badge-inactive'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick='openEditUserModal(${JSON.stringify(s)})'>Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deactivateUser(${s.id},'${s.name.replace(/'/g, "\\'")}')">Deactivate</button>
-      </div></td>
     </tr>`;
-      }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">No student groups found</td></tr>';
+      }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No student groups found</td></tr>';
     }
 
     // ── PENDING USER APPROVALS ───────────────────────────────────────
@@ -2307,20 +2336,16 @@
       const faculty = _allUsers.filter(u => u.role === 'faculty' && u.is_active !== 0);
       document.getElementById('faculty-tbody').innerHTML = faculty.length ? faculty.map(f => {
         const hr = _honoraria.report.find(r => r.id === f.id) || { adviser_groups: 0, panel_sessions: 0, total: 0 };
-        return `<tr>
+        return `<tr style="cursor:pointer;transition:background .12s" onclick='openFacultyModal(${JSON.stringify(f).replace(/'/g,"&#39;")})' onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
       <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${f.id}</td>
-      <td>${f.name}</td>
+      <td><span style="color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(79,142,247,.4)">${f.name}</span></td>
       <td style="font-size:12px;color:var(--text3)">${f.email}</td>
       <td><span class="badge ${f.is_active ? 'badge-active' : 'badge-inactive'}">${f.is_active ? 'Active' : 'Inactive'}</span></td>
       <td style="font-family:var(--mono)">${hr.adviser_groups}</td>
       <td style="font-family:var(--mono)">${hr.panel_sessions}</td>
       <td style="font-family:var(--mono);color:var(--success)">${fmtPeso(hr.total)}</td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick='openEditUserModal(${JSON.stringify(f)})'>Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deactivateUser(${f.id},'${f.name.replace(/'/g, "\\'")}')">Deactivate</button>
-      </div></td>
     </tr>`;
-      }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">No faculty found</td></tr>';
+      }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No faculty found</td></tr>';
     }
 
     // ── VENUES ────────────────────────────────────────────────────────
@@ -2356,12 +2381,180 @@
       const res = await fetch('/api/notifications'); if (!res.ok) return;
       const { notifications } = await res.json();
       const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
-      document.getElementById('notif-list').innerHTML = notifications.length ? notifications.map(n => `<div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''}"><div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type] || colors.info};margin-top:5px;flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;line-height:1.5">${n.message}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div></div><div style="display:flex;gap:6px">${!n.is_read ? `<button class="btn btn-ghost btn-sm" onclick="markRead(${n.id},this)">Read</button>` : ''}<button class="btn btn-ghost btn-sm" onclick="deleteNotif(${n.id},this)" style="color:var(--danger)">Delete</button></div></div>`).join('') : '<div style="padding:40px;text-align:center;color:var(--text3)">No notifications</div>';
+      document.getElementById('notif-list').innerHTML = notifications.length ? notifications.map(n => `
+        <div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''};cursor:pointer;transition:background .15s"
+             onclick='openNotifModal(${JSON.stringify(n).replace(/'/g,"&#39;")})'
+             onmouseenter="this.style.background='var(--surface2)'"
+             onmouseleave="this.style.background=''">
+          <div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type]||colors.info};margin-top:6px;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size:13px;line-height:1.5">${n.message}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+          </div>
+          ${!n.is_read ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px"></div>' : ''}
+        </div>`).join('') : '<div style="padding:40px;text-align:center;color:var(--text3)">No notifications</div>';
     }
 
-    async function markRead(id, btn) { await fetch(`/api/notifications/${id}/read`, { method: 'PUT' }); btn.closest('div[style]').style.opacity = '.55'; btn.remove(); }
-    async function deleteNotif(id, btn) { if (!confirm('Delete this notification?')) return; await fetch(`/api/notifications/${id}`, { method: 'DELETE' }); btn.closest('div[style]').style.display = 'none'; btn.closest('div[style]').remove(); loadNotifications(); }
+    function openNotifModal(n) {
+      const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
+      const icons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+      document.getElementById('notif-detail-body').innerHTML = `
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:16px;background:var(--surface2);border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--border)">
+          <i class="fas ${icons[n.type]||icons.info}" style="color:${colors[n.type]||colors.info};font-size:22px;margin-top:2px;flex-shrink:0"></i>
+          <div>
+            <div style="font-size:14px;line-height:1.7;color:var(--text)">${n.message}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:8px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+          </div>
+        </div>
+        ${!n.is_read ? '<div style="font-size:12px;color:var(--warning);display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--warning);display:inline-block"></span>Unread notification — will be marked as read</div>' : ''}
+      `;
+      document.getElementById('notif-detail-delete-btn').onclick = async () => {
+        await fetch(`/api/notifications/${n.id}`, { method: 'DELETE' });
+        closeModal('notif-detail-modal');
+        await loadNotifications();
+        showToast('Notification deleted', 'success');
+      };
+      openModal('notif-detail-modal');
+      if (!n.is_read) fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => loadNotifications());
+    }
+
+    async function markRead(id, btn) { await fetch(`/api/notifications/${id}/read`, { method: 'PUT' }); loadNotifications(); }
+    async function deleteNotif(id) { await fetch(`/api/notifications/${id}`, { method: 'DELETE' }); loadNotifications(); }
     async function markAllRead() { await fetch('/api/notifications/read-all', { method: 'PUT' }); loadNotifications(); document.getElementById('notif-badge').style.display = 'none'; showToast('All marked as read', 'success') }
+
+    // ── STUDENT DETAIL MODAL ──────────────────────────────────────────
+    function openStudentModal(s) {
+      const appt = _appointments.find(a => a.student_id === s.id) || null;
+      const coAdviser = s.co_adviser_id ? _allUsers.find(u => u.id === s.co_adviser_id) : null;
+      document.getElementById('student-detail-title').textContent = s.group_name || s.name;
+      let membersHtml = '';
+      if (s.members) {
+        try {
+          const { leader, members } = JSON.parse(s.members);
+          const all = [leader, ...(members || [])].filter(Boolean);
+          membersHtml = all.map((n, i) => `<span style="display:inline-flex;align-items:center;gap:3px;background:${i===0?'rgba(79,142,247,.12)':'var(--surface)'};color:${i===0?'var(--accent)':'var(--text2)'};border:1px solid ${i===0?'rgba(79,142,247,.25)':'var(--border2)'};border-radius:99px;padding:3px 10px;font-size:12px;margin:2px">${i===0?'★ ':''}${n}</span>`).join(' ');
+        } catch { membersHtml = '<span style="color:var(--text3)">—</span>'; }
+      } else { membersHtml = '<span style="color:var(--text3);font-size:12px">Solo</span>'; }
+
+      const panelists = appt && appt.panelists ? appt.panelists : [];
+      document.getElementById('student-detail-body').innerHTML = `
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Group Name</div>
+              <div style="font-size:13px;font-weight:500">${s.group_name || '—'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Email</div>
+              <div style="font-size:12px;color:var(--text2);word-break:break-all">${s.email}</div>
+            </div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px">Members</div>
+            <div style="line-height:2">${membersHtml}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Adviser</div>
+              <div style="font-size:13px">${appt && appt.adviser_name ? appt.adviser_name : '<span style="color:var(--text3)">Not assigned</span>'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Co-Adviser</div>
+              <div style="font-size:13px">${coAdviser ? coAdviser.name : '<span style="color:var(--text3)">None</span>'}</div>
+            </div>
+          </div>
+          ${panelists.length ? `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px">Panelists</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">${panelists.map(p=>`<span style="background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:99px;padding:3px 10px;font-size:12px">${p.name}</span>`).join('')}</div>
+          </div>` : ''}
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Venue</div>
+              <div style="font-size:13px">${appt && appt.venue_name ? appt.venue_name : '<span style="color:var(--text3)">Not booked</span>'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Defense Date</div>
+              <div style="font-size:13px">${appt && appt.date ? fmtDate(appt.date) : '<span style="color:var(--text3)">—</span>'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Time Slot</div>
+              <div style="font-size:13px;font-family:var(--mono)">${appt && appt.time_slot ? appt.time_slot : '<span style="color:var(--text3)">—</span>'}</div>
+            </div>
+          </div>
+          ${appt && appt.thesis_title ? `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Thesis Title</div>
+            <div style="font-size:13px;font-style:italic;color:var(--text2)">"${appt.thesis_title}"</div>
+          </div>` : ''}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Account Status</div>
+              <div><span class="badge ${s.is_active ? 'badge-active' : 'badge-inactive'}">${s.is_active ? 'Active' : 'Inactive'}</span></div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Defense Status</div>
+              <div>${appt ? fmtStatus(appt.status) : '<span style="color:var(--text3);font-size:12px">Not scheduled</span>'}</div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('student-edit-btn').onclick = () => { closeModal('student-detail-modal'); openEditUserModal(s); };
+      document.getElementById('student-deactivate-btn').onclick = () => { closeModal('student-detail-modal'); deactivateUser(s.id, s.name); };
+      openModal('student-detail-modal');
+    }
+
+    // ── FACULTY DETAIL MODAL ──────────────────────────────────────────
+    function openFacultyModal(f) {
+      const hr = _honoraria.report.find(r => r.id === f.id) || { adviser_groups: 0, panel_sessions: 0, total: 0, adviser_honoraria: 0, panel_honoraria: 0 };
+      const advisedGroups = _appointments.filter(a => a.adviser_id === f.id && a.status !== 'cancelled');
+      document.getElementById('faculty-detail-title').textContent = f.name;
+      document.getElementById('faculty-detail-body').innerHTML = `
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Full Name</div>
+              <div style="font-size:13px;font-weight:500">${f.name}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Email</div>
+              <div style="font-size:12px;color:var(--text2);word-break:break-all">${f.email}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;text-align:center">
+              <div style="font-size:26px;font-weight:700;color:var(--accent)">${hr.adviser_groups}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Adviser Sessions</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;text-align:center">
+              <div style="font-size:26px;font-weight:700;color:var(--purple)">${hr.panel_sessions}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Panel Sessions</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:var(--success)">${fmtPeso(hr.total)}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Total Honoraria</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Adviser Pay</div>
+              <div style="font-size:15px;font-family:var(--mono);font-weight:600">${fmtPeso(hr.adviser_honoraria)}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Panel Pay</div>
+              <div style="font-size:15px;font-family:var(--mono);font-weight:600">${fmtPeso(hr.panel_honoraria)}</div>
+            </div>
+          </div>
+          ${advisedGroups.length ? `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px">Advising Groups</div>
+            ${advisedGroups.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${a.group_name}</span>${fmtStatus(a.status)}</div>`).join('')}
+          </div>` : ''}
+          <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Account Status</div>
+            <div><span class="badge ${f.is_active ? 'badge-active' : 'badge-inactive'}">${f.is_active ? 'Active' : 'Inactive'}</span></div>
+          </div>
+        </div>`;
+      document.getElementById('faculty-edit-btn').onclick = () => { closeModal('faculty-detail-modal'); openEditUserModal(f); };
+      document.getElementById('faculty-deactivate-btn').onclick = () => { closeModal('faculty-detail-modal'); deactivateUser(f.id, f.name); };
+      openModal('faculty-detail-modal');
+    }
 
     // ── SYSTEM SETTINGS ───────────────────────────────────────────────
     async function loadSettings() {

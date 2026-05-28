@@ -112,6 +112,13 @@ try { db.exec(`ALTER TABLE users ADD COLUMN co_adviser_id INTEGER`); } catch (_)
 try { db.exec(`ALTER TABLE appointments ADD COLUMN thesis_title TEXT`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE appointments ADD COLUMN meeting_link TEXT`); } catch (_) { /* column already exists */ }
 
+// ── Ensure honoraria_rates always has default rows ────────────────
+const ratesCount = db.prepare('SELECT COUNT(*) as c FROM honoraria_rates').get().c;
+if (ratesCount === 0) {
+  db.prepare("INSERT INTO honoraria_rates (role_type, rate_per_session) VALUES ('panelist', 1500)").run();
+  db.prepare("INSERT INTO honoraria_rates (role_type, rate_per_session) VALUES ('adviser', 2000)").run();
+}
+
 // ── Seed ────────────────────────────────────────────────────────
 function seed() {
   const count = db.prepare('SELECT COUNT(*) as c FROM users').get().c;

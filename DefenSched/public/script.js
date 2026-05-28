@@ -390,21 +390,71 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notifications.forEach(n => {
                     let iconClass = n.type === 'success' ? 'success' : (n.type === 'error' ? 'error' : 'info');
                     let icon = n.type === 'success' ? 'fa-check' : (n.type === 'error' ? 'fa-exclamation' : 'fa-info');
-                    const readBtn = !n.is_read ? `<button style="cursor:pointer;background:none;border:none;color:var(--primary);font-size:0.8rem;padding:0.2rem 0.4rem;border-radius:4px;font-weight:500;" onclick="markNotifRead(${n.id})">Mark Read</button>` : '';
-                    const deleteBtn = `<button style="cursor:pointer;background:none;border:none;color:var(--danger);font-size:0.8rem;padding:0.2rem 0.4rem;border-radius:4px;font-weight:500;" onclick="deleteNotification(${n.id})">Delete</button>`;
-                    list.innerHTML += `
-                        <div class="notif-item ${n.is_read ? '' : 'unread'}" style="opacity: ${n.is_read ? '0.7' : '1'}" data-notif-id="${n.id}">
-                            <div class="notif-icon ${iconClass}"><i class="fas ${icon}"></i></div>
-                            <div class="notif-text">
-                                <p>${n.message}</p>
-                                <small>${new Date(n.created_at).toLocaleString()}</small>
-                            </div>
-                            <div style="display:flex;gap:6px;margin-left:auto;">${readBtn}${deleteBtn}</div>
+                    const item = document.createElement('div');
+                    item.className = `notif-item ${n.is_read ? '' : 'unread'}`;
+                    item.style.cssText = `opacity:${n.is_read ? '0.7' : '1'};cursor:pointer;`;
+                    item.dataset.notifId = n.id;
+                    item.innerHTML = `
+                        <div class="notif-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                        <div class="notif-text">
+                            <p>${n.message}</p>
+                            <small>${new Date(n.created_at).toLocaleString()}</small>
                         </div>
+                        ${!n.is_read ? '<div style="width:7px;height:7px;border-radius:50%;background:#4f8ef7;flex-shrink:0;margin-left:auto;margin-top:4px"></div>' : ''}
                     `;
+                    item.addEventListener('click', () => openGlobalNotifModal(n));
+                    list.appendChild(item);
                 });
             }
         }
+    }
+
+    function openGlobalNotifModal(n) {
+        // Close the dropdown first
+        if (notifDropdown) notifDropdown.classList.remove('open');
+        
+        // Remove any existing modal
+        const existing = document.getElementById('global-notif-modal');
+        if (existing) existing.remove();
+
+        const colors = { info: '#4f8ef7', success: '#3ecf8e', warning: '#f5a623', error: '#e05c5c' };
+        const icons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+
+        const modal = document.createElement('div');
+        modal.id = 'global-notif-modal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+        modal.innerHTML = `
+            <div style="background:var(--surface,#13161d);border:1px solid var(--border,#252a38);border-radius:14px;width:100%;max-width:440px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                    <span style="font-size:15px;font-weight:600;color:var(--text,#e8eaf0)">Notification</span>
+                    <button id="gnm-close-x" style="background:none;border:none;color:var(--text2,#8b90a0);font-size:20px;cursor:pointer;line-height:1">×</button>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--surface2,#1a1e28);border-radius:10px;border:1px solid var(--border,#252a38);margin-bottom:16px">
+                    <i class="fas ${icons[n.type]||icons.info}" style="color:${colors[n.type]||colors.info};font-size:20px;flex-shrink:0;margin-top:2px"></i>
+                    <div>
+                        <div style="font-size:14px;line-height:1.7;color:var(--text,#e8eaf0)">${n.message}</div>
+                        <div style="font-size:11px;color:var(--text3,#555b70);margin-top:8px;font-family:monospace">${new Date(n.created_at).toLocaleString()}</div>
+                    </div>
+                </div>
+                ${!n.is_read ? '<div style="font-size:12px;color:#f5a623;margin-bottom:14px;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#f5a623;display:inline-block"></span>Will be marked as read</div>' : ''}
+                <div style="display:flex;gap:8px;justify-content:flex-end">
+                    <button id="gnm-close" style="padding:8px 16px;background:none;border:1px solid var(--border,#252a38);border-radius:8px;color:var(--text,#e8eaf0);cursor:pointer;font-size:13px">Close</button>
+                    <button id="gnm-delete" style="padding:8px 16px;background:#e05c5c;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Delete</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const close = () => modal.remove();
+        document.getElementById('gnm-close-x').onclick = close;
+        document.getElementById('gnm-close').onclick = close;
+        modal.addEventListener('click', e => { if (e.target === modal) close(); });
+        document.getElementById('gnm-delete').onclick = async () => {
+            await fetch(`/api/notifications/${n.id}`, { method: 'DELETE' });
+            close();
+            await loadNotifications();
+        };
+        if (!n.is_read) fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => loadNotifications());
     }
 
     async function markNotifRead(id) {
@@ -413,7 +463,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function deleteNotification(id) {
-        if (!confirm('Delete this notification?')) return;
         await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
         await loadNotifications();
     }
