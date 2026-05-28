@@ -8,6 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   <style>
     :root {
       --bg: #0d0f14;
@@ -1084,6 +1085,52 @@
       background: rgba(167, 139, 250, .25);
     }
 
+    /* ── Password visibility wrapper ───────────────────────────── */
+    .adm-pw-wrap {
+      position: relative;
+    }
+
+    .adm-pw-eye {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text3);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      transition: color .15s;
+    }
+
+    .adm-pw-eye:hover { color: var(--text); }
+
+    /* ── Notification detail modal ───────────────────────────── */
+    .nm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .nm-overlay.open{opacity:1;pointer-events:all}
+    .nm-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:min(440px,92vw);overflow:hidden;transform:translateY(10px);transition:transform .2s}
+    .nm-overlay.open .nm-box{transform:translateY(0)}
+    .nm-header{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border)}
+    .nm-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .nm-title{font-size:14px;font-weight:600;flex:1;color:var(--text)}
+    .nm-close{background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px}
+    .nm-close:hover{color:var(--text)}
+    .nm-body{padding:20px 20px 16px}
+    .nm-message{font-size:14px;line-height:1.65;color:var(--text);margin:0 0 12px;white-space:pre-wrap}
+    .nm-time{font-size:11px;color:var(--text3);font-family:var(--mono)}
+    .nm-footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--border)}
+    .notif-row{display:flex;align-items:flex-start;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+    .notif-row:hover{background:var(--surface2)}
+    .notif-row.read{opacity:.55}
+    .notif-row-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+    .notif-row-body{flex:1;min-width:0}
+    .notif-row-msg{font-size:13px;line-height:1.5;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .notif-row-time{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px}
+    .notif-row-unread{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px}
+
     .panelist-conflict-badge {
       display: inline-flex;
       align-items: center;
@@ -1704,8 +1751,12 @@
             id="edit-group" placeholder="e.g. Group Alpha"></div>
       </div>
       <div class="form-group"><label class="form-label">New Password <span
-            style="font-weight:400;color:var(--text3);text-transform:none">(blank = keep current)</span></label><input
-          class="form-input" id="edit-password" type="password" placeholder="••••••••"></div>
+            style="font-weight:400;color:var(--text3);text-transform:none">(blank = keep current)</span></label>
+        <div class="adm-pw-wrap">
+          <input class="form-input" id="edit-password" type="password" placeholder="••••••••" style="padding-right:38px">
+          <button type="button" class="adm-pw-eye" onclick="admTogglePw('edit-password',this)" tabindex="-1" title="Show/hide password"><i class="fa-regular fa-eye"></i></button>
+        </div>
+      </div>
       <div class="form-group" id="status-field"><label class="form-label">Status</label><select class="form-select"
           id="edit-status">
           <option value="1">Active</option>
@@ -1753,8 +1804,12 @@
           id="cu-email" placeholder="email@cics.edu.ph"></div>
       <div class="form-group" id="cu-groupname-wrap"><label class="form-label">Group Name (for student)</label><input
           type="text" class="form-input" id="cu-groupname" placeholder="e.g. Group Gamma"></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input"
-          id="cu-password" placeholder="Minimum 8 characters"></div>
+      <div class="form-group"><label class="form-label">Password</label>
+        <div class="adm-pw-wrap">
+          <input type="password" class="form-input" id="cu-password" placeholder="Minimum 8 characters" style="padding-right:38px">
+          <button type="button" class="adm-pw-eye" onclick="admTogglePw('cu-password',this)" tabindex="-1" title="Show/hide password"><i class="fa-regular fa-eye"></i></button>
+        </div>
+      </div>
       <input type="hidden" id="cu-role">
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px"><button class="btn btn-ghost"
           onclick="closeModal('create-user-modal')">Cancel</button><button class="btn btn-primary"
@@ -1823,6 +1878,46 @@
   </div>
 
   <script>
+    // ── Notification modal ────────────────────────────────────────────
+    let _notifCache = {};
+    function openNotifModal(id) {
+      const n = _notifCache[id]; if (!n) return;
+      const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
+      document.getElementById('nm-dot').style.background = colors[n.type] || colors.info;
+      document.getElementById('nm-message').textContent = n.message;
+      document.getElementById('nm-time').textContent = new Date(n.created_at).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+      const readBtn = document.getElementById('nm-read-btn');
+      readBtn.style.display = n.is_read ? 'none' : '';
+      readBtn.onclick = () => nmMarkRead(id);
+      document.getElementById('nm-delete-btn').onclick = () => nmDelete(id);
+      document.getElementById('nm-overlay').classList.add('open');
+    }
+    function closeNotifModal() { document.getElementById('nm-overlay').classList.remove('open'); }
+    async function nmMarkRead(id) {
+      await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+      _notifCache[id].is_read = 1;
+      document.getElementById('nm-read-btn').style.display = 'none';
+      loadNotifications();
+      const nb = document.getElementById('notif-badge');
+      const unread = Object.values(_notifCache).filter(n => !n.is_read).length;
+      nb.textContent = unread; nb.style.display = unread ? '' : 'none';
+    }
+    async function nmDelete(id) {
+      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+      closeNotifModal();
+      loadNotifications();
+    }
+
+    // ── Password visibility toggle ────────────────────────────────────
+    function admTogglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      const icon = btn.querySelector('i');
+      if (icon) icon.className = isHidden ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    }
+
     let _user = null, _appointments = [], _allUsers = [], _venues = [], _honoraria = { report: [], grand_total: 0, rates: {} }, _statusApptId = null;
 
     // ── NAVIGATION (single clean handler, no duplicates) ──────────────
@@ -2328,12 +2423,24 @@
       const res = await fetch('/api/notifications'); if (!res.ok) return;
       const { notifications } = await res.json();
       const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
-      document.getElementById('notif-list').innerHTML = notifications.length ? notifications.map(n => `<div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''}"><div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type] || colors.info};margin-top:5px;flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;line-height:1.5">${n.message}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div></div><div style="display:flex;gap:6px">${!n.is_read ? `<button class="btn btn-ghost btn-sm" onclick="markRead(${n.id},this)">Read</button>` : ''}<button class="btn btn-ghost btn-sm" onclick="deleteNotif(${n.id},this)" style="color:var(--danger)">Delete</button></div></div>`).join('') : '<div style="padding:40px;text-align:center;color:var(--text3)">No notifications</div>';
+      _notifCache = {};
+      notifications.forEach(n => _notifCache[n.id] = n);
+      document.getElementById('notif-list').innerHTML = notifications.length
+        ? notifications.map(n => `<div class="notif-row${n.is_read ? ' read' : ''}" onclick="openNotifModal(${n.id})">
+            <div class="notif-row-dot" style="background:${colors[n.type] || colors.info}"></div>
+            <div class="notif-row-body">
+              <div class="notif-row-msg">${n.message}</div>
+              <div class="notif-row-time">${new Date(n.created_at).toLocaleString('en-PH', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+            </div>
+            ${!n.is_read ? '<div class="notif-row-unread"></div>' : ''}
+          </div>`).join('')
+        : '<div style="padding:40px;text-align:center;color:var(--text3)">No notifications</div>';
+      const unread = notifications.filter(n => !n.is_read).length;
+      const nb = document.getElementById('notif-badge');
+      nb.textContent = unread; nb.style.display = unread ? '' : 'none';
     }
 
-    async function markRead(id, btn) { await fetch(`/api/notifications/${id}/read`, { method: 'PUT' }); btn.closest('div[style]').style.opacity = '.55'; btn.remove(); }
-    async function deleteNotif(id, btn) { if (!confirm('Delete this notification?')) return; await fetch(`/api/notifications/${id}`, { method: 'DELETE' }); btn.closest('div[style]').style.display = 'none'; btn.closest('div[style]').remove(); loadNotifications(); }
-    async function markAllRead() { await fetch('/api/notifications/read-all', { method: 'PUT' }); loadNotifications(); document.getElementById('notif-badge').style.display = 'none'; showToast('All marked as read', 'success') }
+    async function markAllRead() { await fetch('/api/notifications/read-all', { method: 'PUT' }); loadNotifications(); showToast('All marked as read', 'success'); }
 
     // ── SYSTEM SETTINGS ───────────────────────────────────────────────
     async function loadSettings() {
@@ -2597,6 +2704,25 @@
       setInterval(refresh, 30000);
     })();
   </script>
+  <!-- Notification detail modal -->
+  <div class="nm-overlay" id="nm-overlay" onclick="if(event.target===this)closeNotifModal()">
+    <div class="nm-box">
+      <div class="nm-header">
+        <div class="nm-dot" id="nm-dot"></div>
+        <span class="nm-title">Notification</span>
+        <button class="nm-close" onclick="closeNotifModal()">×</button>
+      </div>
+      <div class="nm-body">
+        <p class="nm-message" id="nm-message"></p>
+        <div class="nm-time" id="nm-time"></div>
+      </div>
+      <div class="nm-footer">
+        <button class="btn btn-ghost btn-sm" id="nm-read-btn">Mark as Read</button>
+        <button class="btn btn-ghost btn-sm" id="nm-delete-btn" style="color:var(--danger)">Delete</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeNotifModal()">Close</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
