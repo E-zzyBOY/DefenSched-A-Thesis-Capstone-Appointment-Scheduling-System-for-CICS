@@ -1512,9 +1512,10 @@
           </div>
           <div class="form-field">
             <label>Adviser</label>
-            <select class="input" id="bk-adviser">
-              <option value="">Loading faculty...</option>
-            </select>
+            <div class="input" id="bk-adviser-display" style="display:flex;align-items:center;gap:8px;background:var(--surface2);cursor:default;color:var(--text2);">
+              <span id="bk-adviser-name" style="flex:1;">Loading...</span>
+            </div>
+            <input type="hidden" id="bk-adviser" value="">
           </div>
           <div class="form-row">
             <div class="form-field">
@@ -1820,13 +1821,21 @@
     // ── Overview details ──────────────────────────────────────────────
     function renderOverviewDetails() {
       const a = _appointment;
+      // Use adviser from appointment if available, otherwise fall back to the one assigned at sign-up
+      const adviserName = (a && a.adviser_name) ? a.adviser_name : (_user && _user.adviser_name) ? _user.adviser_name : null;
       if (!a) {
         document.getElementById('d-date').textContent = 'Not booked';
         document.getElementById('d-day').textContent = '—';
         document.getElementById('d-time').textContent = '—';
         document.getElementById('d-venue').textContent = '—';
-        document.getElementById('adviser-dot').textContent = '—';
-        document.getElementById('adviser-name').textContent = '—';
+        if (adviserName) {
+          const advInitials = adviserName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          document.getElementById('adviser-dot').textContent = advInitials;
+          document.getElementById('adviser-name').textContent = adviserName;
+        } else {
+          document.getElementById('adviser-dot').textContent = '—';
+          document.getElementById('adviser-name').textContent = '—';
+        }
         document.getElementById('defense-tag').textContent = 'No appointment';
         document.getElementById('defense-tag').className = 'tag';
         return;
@@ -1836,9 +1845,9 @@
       document.getElementById('d-day').textContent = a.date ? new Date(a.date + 'T00:00:00').toLocaleDateString('en-PH', { weekday: 'long' }) : '—';
       document.getElementById('d-time').textContent = a.time_slot || '—';
       document.getElementById('d-venue').textContent = a.venue_name || '—';
-      const advInitials = (a.adviser_name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const advInitials = (adviserName || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
       document.getElementById('adviser-dot').textContent = advInitials;
-      document.getElementById('adviser-name').textContent = a.adviser_name || '—';
+      document.getElementById('adviser-name').textContent = adviserName || '—';
       document.getElementById('defense-tag').textContent = a.status.charAt(0).toUpperCase() + a.status.slice(1);
       document.getElementById('defense-tag').className = `tag tag-${a.status}`;
 
@@ -1969,12 +1978,18 @@
     let _venues = [];
     async function loadBookingDropdowns() {
       try {
-        const [fRes, vRes] = await Promise.all([fetch('/api/faculty'), fetch('/api/venues')]);
-        const { faculty } = await fRes.json();
+        const vRes = await fetch('/api/venues');
         const { venues } = await vRes.json();
         _venues = venues;
-        document.getElementById('bk-adviser').innerHTML = '<option value="">Choose adviser</option>' + faculty.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
         document.getElementById('bk-venue').innerHTML = '<option value="">Choose venue</option>' + venues.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+
+        // Pre-fill adviser from the student's registered adviser (no re-selection needed)
+        if (_user && _user.adviser_id) {
+          document.getElementById('bk-adviser').value = _user.adviser_id;
+          document.getElementById('bk-adviser-name').textContent = _user.adviser_name || 'Assigned Adviser';
+        } else {
+          document.getElementById('bk-adviser-name').textContent = 'No adviser assigned — contact your coordinator.';
+        }
       } catch (e) { console.error('Dropdown load error', e); }
     }
 
@@ -2018,7 +2033,7 @@
       const venue = document.getElementById('bk-venue').value;
       const resultEl = document.getElementById('conflict-check-result');
       if (!date || !timeRaw || !adviser || !venue) {
-        showToast('Fill in date, time, adviser, and venue first.', 'warning');
+        showToast('Fill in date, time, and venue first.', 'warning');
         return;
       }
       const hour = parseInt(timeRaw.split(':')[0]);

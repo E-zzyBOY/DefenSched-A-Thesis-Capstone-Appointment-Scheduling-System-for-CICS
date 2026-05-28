@@ -5,19 +5,11 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const db      = require('../database');
 
-// ── Email domain validator ──────────────────────────────────
-function isValidCicsEmail(email) {
-  return /^[^\s@]+@cics\.edu\.ph$/i.test(email.trim());
-}
-
-// POST /api/auth/register — Users start with 'pending' status; admin must approve (requireActive middleware blocks access until approved)
+// POST /api/auth/register — Users start with 'pending' status; admin must approve
 router.post('/register', (req, res) => {
-  const { name, email, password, role, is_group, group_name, leader_name, member_names } = req.body;
+  const { name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id } = req.body;
   if (!name || !email || !password || !role)
     return res.status(400).json({ error: 'All fields are required.' });
-
-  if (!isValidCicsEmail(email))
-    return res.status(400).json({ error: 'Invalid email. Only @cics.edu.ph addresses are allowed.' });
 
   // Build members JSON for group student accounts
   let membersJson = null;
@@ -31,11 +23,10 @@ router.post('/register', (req, res) => {
 
   const hashed = bcrypt.hashSync(password, 10);
   try {
-    // All new users start with status='pending'. Admins must approve before they can access the app.
     const { lastInsertRowid: id } = db.prepare(`
-      INSERT INTO users (name, email, password_hash, role, group_name, is_group, members, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(name, email.toLowerCase().trim(), hashed, role, group_name || null, isGroup, membersJson, 'pending');
+      INSERT INTO users (name, email, password_hash, role, group_name, is_group, members, status, adviser_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(name, email.toLowerCase().trim(), hashed, role, group_name || null, isGroup, membersJson, 'pending', (role === 'student' && !adviser_id) ? null : adviser_id || null);
 
     // Notify all admins in the system about the new signup
     const admins = db.prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1").all();
@@ -59,7 +50,7 @@ router.post('/register', (req, res) => {
   }
 });
 
-// POST /api/auth/login — Blocks login for 'pending' or 'rejected' status users
+// POST /api/auth/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
@@ -71,7 +62,6 @@ router.post('/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password_hash))
     return res.status(401).json({ error: 'Invalid email or password.' });
 
-  // Check account approval status: only 'active' users can log in
   if (user.status === 'pending') {
     return res.status(403).json({ error: 'Your account is pending admin approval.' });
   }
@@ -87,7 +77,7 @@ router.post('/login', (req, res) => {
 
   res.json({
     success: true,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, group_name: user.group_name, is_group: user.is_group, members: user.members }
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, group_name: user.group_name, is_group: user.is_group, members: user.members, adviser_id: user.adviser_id }
   });
 });
 
@@ -99,8 +89,13 @@ router.post('/logout', (req, res) => {
 // GET /api/auth/me
 router.get('/me', (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ error: 'Not authenticated.' });
-  const user = db.prepare('SELECT id, name, email, role, group_name, is_group, members, status FROM users WHERE id = ?')
-                 .get(req.session.userId);
+  const user = db.prepare(`
+    SELECT u.id, u.name, u.email, u.role, u.group_name, u.is_group, u.members, u.status, u.adviser_id,
+           a.name AS adviser_name
+    FROM users u
+    LEFT JOIN users a ON a.id = u.adviser_id
+    WHERE u.id = ?
+  `).get(req.session.userId);
   if (!user) return res.status(401).json({ error: 'User not found.' });
   res.json({ user });
 });

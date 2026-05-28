@@ -532,6 +532,11 @@
 
         <!-- Solo / Group — students only -->
         <div id="reg-group-section">
+          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Adviser</p>
+          <select id="reg-adviser" style="width:100%;padding:8px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;background:#f3f4f8;color:#333;outline:none;cursor:pointer;box-sizing:border-box;">
+            <option value="">Loading faculty...</option>
+          </select>
+
           <p style="font-size:11px;color:#888;margin:2px 0 6px;">Participation Type</p>
           <div
             style="display:flex;background:#f3f4f8;border:0.5px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:10px;">
@@ -713,19 +718,20 @@
         return;
       }
 
-      if (!/^[^\s@]+@cics\.edu\.ph$/i.test(email)) {
-        alert('Invalid email address. Only @cics.edu.ph institutional emails are allowed.');
-        return;
-      }
-
       // Build group payload for student accounts
       let is_group = false;
       let group_name = null;
       let leader_name = null;
       let member_names = [];
 
+      const adviser_id = document.getElementById('reg-adviser')?.value || null;
+
       if (role === 'student') {
         group_name = name;
+        if (!adviser_id) {
+          alert('Please select an adviser.');
+          return;
+        }
         if (isGroupMode) {
           is_group = true;
           const size = parseInt(document.getElementById('reg-group-size').value) || 2;
@@ -748,7 +754,7 @@
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names })
+          body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id })
         });
         const data = await res.json();
 
@@ -771,6 +777,23 @@
 
     // Init: student is default — show group section
     regRoleChange();
+
+    // Load faculty list for adviser dropdown
+    (async () => {
+      try {
+        const res = await fetch('/api/faculty');
+        const data = await res.json();
+        const select = document.getElementById('reg-adviser');
+        if (select) {
+          select.innerHTML = '<option value="">Select an adviser...</option>';
+          (data.faculty || []).forEach(f => {
+            select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+          });
+        }
+      } catch (e) {
+        console.error('Error fetching faculty', e);
+      }
+    })();
   </script>
 </body>
 
