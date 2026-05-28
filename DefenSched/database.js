@@ -107,6 +107,8 @@ db.exec(`
 try { db.exec(`ALTER TABLE users ADD COLUMN members TEXT`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE users ADD COLUMN is_group INTEGER NOT NULL DEFAULT 0`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`); } catch (_) { /* column already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN adviser_id INTEGER`); } catch (_) { /* column already exists */ }
+try { db.exec(`ALTER TABLE users ADD COLUMN co_adviser_id INTEGER`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE appointments ADD COLUMN thesis_title TEXT`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE appointments ADD COLUMN meeting_link TEXT`); } catch (_) { /* column already exists */ }
 

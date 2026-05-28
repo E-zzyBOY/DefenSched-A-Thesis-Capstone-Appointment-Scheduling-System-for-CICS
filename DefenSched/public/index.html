@@ -183,7 +183,8 @@
       white-space: nowrap;
     }
 
-    .form-container input {
+    .form-container input,
+    .form-container select {
       background: #f3f4f8;
       border: 1.5px solid transparent;
       border-radius: 10px;
@@ -193,11 +194,25 @@
       outline: none;
       margin-bottom: 10px;
       transition: border-color 0.2s;
+      font-family: inherit;
     }
 
-    .form-container input:focus {
+    .form-container input:focus,
+    .form-container select:focus {
       border-color: #2b1369;
       background: #fff;
+    }
+
+    .form-container select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 14px;
+      padding-right: 36px !important;
+      cursor: pointer;
     }
 
     .row {
@@ -524,20 +539,24 @@
       z-index: 2;
     }
 
-    .pw-eye:hover { color: #2b1369; }
+    .pw-eye:hover {
+      color: #2b1369;
+    }
 
     /* ── Forgot Password Modal ───────────────────────────────── */
     .fp-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       z-index: 9999;
       align-items: center;
       justify-content: center;
     }
 
-    .fp-overlay.open { display: flex; }
+    .fp-overlay.open {
+      display: flex;
+    }
 
     .fp-box {
       background: #fff;
@@ -545,7 +564,7 @@
       padding: 32px 30px;
       width: 380px;
       max-width: 94vw;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
       position: relative;
     }
 
@@ -574,7 +593,9 @@
       line-height: 1;
     }
 
-    .fp-close:hover { color: #333; }
+    .fp-close:hover {
+      color: #333;
+    }
 
     .fp-input {
       background: #f3f4f8;
@@ -589,7 +610,10 @@
       transition: border-color 0.2s;
     }
 
-    .fp-input:focus { border-color: #2b1369; background: #fff; }
+    .fp-input:focus {
+      border-color: #2b1369;
+      background: #fff;
+    }
 
     #fp-error {
       color: #e53e3e;
@@ -633,8 +657,7 @@
         </div>
 
         <!-- Role selector -->
-        <select id="reg-role" onchange="regRoleChange()"
-          style="width:100%;padding:9px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#f3f4f8;color:#333;outline:none;cursor:pointer;">
+        <select id="reg-role" onchange="regRoleChange()" style="cursor:pointer;">
           <option value="student">&#127891; Thesis Student</option>
           <option value="faculty">&#128218; Faculty (Adviser / Panelist)</option>
         </select>
@@ -643,13 +666,24 @@
         <input type="email" id="reg-email" placeholder="Email Address" />
         <div class="pw-wrap">
           <input type="password" id="reg-password" placeholder="Password" />
-          <button type="button" class="pw-eye" onclick="togglePwVis('reg-password',this)" tabindex="-1" title="Show/hide password">
+          <button type="button" class="pw-eye" onclick="togglePwVis('reg-password',this)" tabindex="-1"
+            title="Show/hide password">
             <i class="fa-regular fa-eye"></i>
           </button>
         </div>
 
         <!-- Solo / Group — students only -->
-        <div id="reg-group-section">
+        <div id="reg-group-section" style="width: 100%;">
+          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Adviser</p>
+          <select id="reg-adviser" style="cursor:pointer;box-sizing:border-box;">
+            <option value="">Loading faculty...</option>
+          </select>
+
+          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Co-Adviser</p>
+          <select id="reg-coadviser" style="cursor:pointer;box-sizing:border-box;">
+            <option value="">None</option>
+          </select>
+
           <p style="font-size:11px;color:#888;margin:2px 0 6px;">Participation Type</p>
           <div
             style="display:flex;background:#f3f4f8;border:0.5px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:10px;">
@@ -663,8 +697,7 @@
             </button>
           </div>
           <div id="reg-group-fields" style="display:none;">
-            <select id="reg-group-size" onchange="buildMemberFields()"
-              style="width:100%;padding:9px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#f3f4f8;color:#333;outline:none;">
+            <select id="reg-group-size" onchange="buildMemberFields()">
               <option value="2">2 members</option>
               <option value="3">3 members</option>
               <option value="4">4 members</option>
@@ -702,7 +735,8 @@
         <input type="email" id="login-email" name="email" placeholder="Email Address" />
         <div class="pw-wrap">
           <input type="password" id="login-password" name="password" placeholder="Password" />
-          <button type="button" class="pw-eye" onclick="togglePwVis('login-password',this)" tabindex="-1" title="Show/hide password">
+          <button type="button" class="pw-eye" onclick="togglePwVis('login-password',this)" tabindex="-1"
+            title="Show/hide password">
             <i class="fa-regular fa-eye"></i>
           </button>
         </div>
@@ -717,40 +751,47 @@
     </div>
 
     <!-- Forgot Password Modal -->
-  <div class="fp-overlay" id="fp-overlay" onclick="if(event.target===this)closeForgotModal()">
-    <div class="fp-box">
-      <button class="fp-close" onclick="closeForgotModal()">×</button>
-      <div id="fp-step1">
-        <h2>Reset Password</h2>
-        <p class="fp-sub">Enter your registered @cics.edu.ph email address.</p>
-        <div id="fp-error"></div>
-        <input type="email" class="fp-input" id="fp-email" placeholder="Email Address" />
-        <button class="submit-btn" type="button" onclick="fpNext()" style="margin-top:0">Continue</button>
-      </div>
-      <div id="fp-step2" style="display:none">
-        <h2>Set New Password</h2>
-        <p class="fp-sub" id="fp-step2-sub">Enter a new password for your account.</p>
-        <div id="fp-success"></div>
-        <div id="fp-error2" style="color:#e53e3e;font-size:12px;margin-bottom:8px;display:none;"></div>
-        <div class="pw-wrap">
-          <input type="password" class="fp-input" id="fp-newpw" placeholder="New Password (min. 6 chars)" style="margin-bottom:12px" />
-          <button type="button" class="pw-eye" onclick="togglePwVis('fp-newpw',this)" tabindex="-1" style="top:38%;right:10px;position:absolute;">
-            <i class="fa-regular fa-eye"></i>
-          </button>
+    <div class="fp-overlay" id="fp-overlay" onclick="if(event.target===this)closeForgotModal()">
+      <div class="fp-box">
+        <button class="fp-close" onclick="closeForgotModal()">×</button>
+        <div id="fp-step1">
+          <h2>Reset Password</h2>
+          <p class="fp-sub">Enter your registered @cics.edu.ph email address.</p>
+          <div id="fp-error"></div>
+          <input type="email" class="fp-input" id="fp-email" placeholder="Email Address" />
+          <button class="submit-btn" type="button" onclick="fpNext()" style="margin-top:0">Continue</button>
         </div>
-        <div class="pw-wrap">
-          <input type="password" class="fp-input" id="fp-confirmpw" placeholder="Confirm New Password" style="margin-bottom:12px" />
-          <button type="button" class="pw-eye" onclick="togglePwVis('fp-confirmpw',this)" tabindex="-1" style="top:38%;right:10px;position:absolute;">
-            <i class="fa-regular fa-eye"></i>
-          </button>
+        <div id="fp-step2" style="display:none">
+          <h2>Set New Password</h2>
+          <p class="fp-sub" id="fp-step2-sub">Enter a new password for your account.</p>
+          <div id="fp-success"></div>
+          <div id="fp-error2" style="color:#e53e3e;font-size:12px;margin-bottom:8px;display:none;"></div>
+          <div class="pw-wrap">
+            <input type="password" class="fp-input" id="fp-newpw" placeholder="New Password (min. 6 chars)"
+              style="margin-bottom:12px" />
+            <button type="button" class="pw-eye" onclick="togglePwVis('fp-newpw',this)" tabindex="-1"
+              style="top:38%;right:10px;position:absolute;">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <div class="pw-wrap">
+            <input type="password" class="fp-input" id="fp-confirmpw" placeholder="Confirm New Password"
+              style="margin-bottom:12px" />
+            <button type="button" class="pw-eye" onclick="togglePwVis('fp-confirmpw',this)" tabindex="-1"
+              style="top:38%;right:10px;position:absolute;">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <button class="submit-btn" type="button" id="fp-submit-btn" onclick="fpSubmit()" style="margin-top:0">Reset
+            Password</button>
+          <button type="button" onclick="fpBackToStep1()"
+            style="width:100%;margin-top:8px;background:none;border:none;color:#888;font-size:12px;cursor:pointer;font-family:inherit;">←
+            Back</button>
         </div>
-        <button class="submit-btn" type="button" id="fp-submit-btn" onclick="fpSubmit()" style="margin-top:0">Reset Password</button>
-        <button type="button" onclick="fpBackToStep1()" style="width:100%;margin-top:8px;background:none;border:none;color:#888;font-size:12px;cursor:pointer;font-family:inherit;">← Back</button>
       </div>
     </div>
-  </div>
 
-  <div class="toggle-container">
+    <div class="toggle-container">
       <div class="toggle">
         <div class="toggle-panel toggle-left">
           <h1>Welcome Back!</h1>
@@ -870,19 +911,21 @@
         return;
       }
 
-      if (!/^[^\s@]+@cics\.edu\.ph$/i.test(email)) {
-        alert('Invalid email address. Only @cics.edu.ph institutional emails are allowed.');
-        return;
-      }
-
       // Build group payload for student accounts
       let is_group = false;
       let group_name = null;
       let leader_name = null;
       let member_names = [];
 
+      const adviser_id = document.getElementById('reg-adviser')?.value || null;
+      const co_adviser_id = document.getElementById('reg-coadviser')?.value || null;
+
       if (role === 'student') {
         group_name = name;
+        if (!adviser_id) {
+          alert('Please select an adviser.');
+          return;
+        }
         if (isGroupMode) {
           is_group = true;
           const size = parseInt(document.getElementById('reg-group-size').value) || 2;
@@ -905,7 +948,7 @@
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names })
+          body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id, co_adviser_id })
         });
         const data = await res.json();
 
