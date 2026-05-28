@@ -4,11 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<<<<<<< Updated upstream
   <title>CICS Login</title>
-=======
-  <title>CICS Appointment Scheduling System</title>
->>>>>>> Stashed changes
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
     rel="stylesheet" />
@@ -204,28 +200,6 @@
       background: #fff;
     }
 
-<<<<<<< Updated upstream
-=======
-    .form-container select {
-      background: #f3f4f8;
-      border: 1.5px solid transparent;
-      border-radius: 10px;
-      width: 100%;
-      padding: 11px 14px;
-      font-size: 13px;
-      outline: none;
-      margin-bottom: 10px;
-      transition: border-color 0.2s;
-      color: #333;
-      cursor: pointer;
-    }
-
-    .form-container select:focus {
-      border-color: #2b1369;
-      background: #fff;
-    }
-
->>>>>>> Stashed changes
     .row {
       display: flex;
       justify-content: space-between;
@@ -546,12 +520,8 @@
         </div>
 
         <!-- Role selector -->
-<<<<<<< Updated upstream
         <select id="reg-role" onchange="regRoleChange()"
           style="width:100%;padding:9px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#f3f4f8;color:#333;outline:none;cursor:pointer;">
-=======
-        <select id="reg-role" onchange="regRoleChange()">
->>>>>>> Stashed changes
           <option value="student">&#127891; Thesis Student</option>
           <option value="faculty">&#128218; Faculty (Adviser / Panelist)</option>
         </select>
@@ -561,16 +531,7 @@
         <input type="password" id="reg-password" placeholder="Password" />
 
         <!-- Solo / Group — students only -->
-<<<<<<< Updated upstream
         <div id="reg-group-section">
-=======
-        <div id="reg-group-section" style="width: 100%;">
-          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Adviser</p>
-          <select id="reg-adviser">
-            <option value="">Loading faculty...</option>
-          </select>
-
->>>>>>> Stashed changes
           <p style="font-size:11px;color:#888;margin:2px 0 6px;">Participation Type</p>
           <div
             style="display:flex;background:#f3f4f8;border:0.5px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:10px;">
@@ -584,12 +545,8 @@
             </button>
           </div>
           <div id="reg-group-fields" style="display:none;">
-<<<<<<< Updated upstream
             <select id="reg-group-size" onchange="buildMemberFields()"
               style="width:100%;padding:9px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#f3f4f8;color:#333;outline:none;">
-=======
-            <select id="reg-group-size" onchange="buildMemberFields()">
->>>>>>> Stashed changes
               <option value="2">2 members</option>
               <option value="3">3 members</option>
               <option value="4">4 members</option>
@@ -599,7 +556,6 @@
             <input type="text" id="reg-leader" placeholder="Team Leader Full Name" style="margin-bottom:6px;" />
             <div id="reg-members-container"></div>
           </div>
-<<<<<<< Updated upstream
         </div>
 
         <button class="submit-btn" type="button" onclick="handleRegister()">Sign Up</button>
@@ -637,45 +593,6 @@
       </form>
     </div>
 
-=======
-        </div>
-
-        <button class="submit-btn" type="button" onclick="handleRegister()">Sign Up</button>
-      </form>
-    </div>
-
-    <div class="form-container sign-in">
-      <form id="login-form-slide">
-        <div class="logo-wrap">
-          <img
-            src="data:image/jpeg;base64,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"
-            alt="CICS Logo" />
-          <span>CICS</span>
-        </div>
-        <h1>Sign In</h1>
-        <p class="sub">Welcome back, CICSmarter!</p>
-        <div class="social-icons">
-          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#"><i class="fa-brands fa-google"></i></a>
-          <a href="#"><i class="fa-brands fa-instagram"></i></a>
-        </div>
-        <div class="divider">
-          <div class="divider-line"></div><span>or use your account</span>
-          <div class="divider-line"></div>
-        </div>
-        <input type="email" id="login-email" name="email" placeholder="Email Address" />
-        <input type="password" id="login-password" name="password" placeholder="Password" />
-        <div id="login-error" style="color:#e53e3e;font-size:13px;margin:4px 0 6px;display:none;"></div>
-        <div class="row">
-          <label><input type="checkbox" style="width:auto;margin:0;background:none;border:none;padding:0;" /> Remember
-            me</label>
-          <a href="#">Forgot your password?</a>
-        </div>
-        <button class="submit-btn" type="button" id="login-btn-slide" onclick="handleLogin()">Sign In</button>
-      </form>
-    </div>
-
->>>>>>> Stashed changes
     <div class="toggle-container">
       <div class="toggle">
         <div class="toggle-panel toggle-left">
@@ -751,17 +668,6 @@
         errEl.style.display = 'block';
         return;
       }
-<<<<<<< Updated upstream
-
-      btn.disabled = true;
-      btn.textContent = 'Signing in...';
-
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-=======
 
       btn.disabled = true;
       btn.textContent = 'Signing in...';
@@ -775,81 +681,6 @@
         const data = await res.json();
 
         if (res.ok) {
-          const dashboardMap = {
-            admin: '/admin-dashboard',
-            faculty: '/faculty-dashboard',
-            student: '/student-dashboard'
-          };
-          const dest = dashboardMap[data.user.role];
-          window.location.replace(dest || '/');
-        } else {
-          errEl.textContent = data.error || 'Login failed. Please try again.';
-          errEl.style.display = 'block';
-        }
-      } catch (e) {
-        errEl.textContent = 'Server error. Please try again later.';
-        errEl.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
-      }
-    }
-
-    // Handle register button
-    async function handleRegister() {
-      const role = document.getElementById('reg-role').value;
-      const name = document.getElementById('reg-name').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value;
-
-      if (!name || !email || !password) {
-        alert('Please fill in all required fields.');
-        return;
-      }
-
-      // Build group payload for student accounts
-      let is_group = false;
-      let group_name = null;
-      let leader_name = null;
-      let member_names = [];
-
-      const adviser_id = document.getElementById('reg-adviser')?.value || null;
-
-      if (role === 'student') {
-        group_name = name;
-        if (!adviser_id) {
-          alert('Please select an adviser.');
-          return;
-        }
-        if (isGroupMode) {
-          is_group = true;
-          const size = parseInt(document.getElementById('reg-group-size').value) || 2;
-          leader_name = (document.getElementById('reg-leader')?.value || '').trim();
-          if (!leader_name) {
-            alert('Please enter the team leader\'s name.');
-            return;
-          }
-          for (let i = 2; i <= size; i++) {
-            const m = document.getElementById(`reg-member-${i}`);
-            if (m && m.value.trim()) member_names.push(m.value.trim());
-          }
-        }
-      }
-
-      const registerBtn = document.querySelector('#register-form .submit-btn');
-      if (registerBtn) { registerBtn.disabled = true; registerBtn.textContent = 'Creating account...'; }
-
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id })
->>>>>>> Stashed changes
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-<<<<<<< Updated upstream
           const dashboardMap = {
             admin: '/admin-dashboard',
             faculty: '/faculty-dashboard',
@@ -940,42 +771,6 @@
 
     // Init: student is default — show group section
     regRoleChange();
-=======
-          alert('Account created successfully! You can now sign in.');
-          document.getElementById('register-form').reset();
-          isGroupMode = false;
-          setGroupMode(false);
-          regRoleChange();
-          c.classList.remove('active'); // go back to sign-in
-        } else {
-          alert(data.error || 'Registration failed. Please try again.');
-        }
-      } catch (e) {
-        alert('Server error. Please try again later.');
-      } finally {
-        if (registerBtn) { registerBtn.disabled = false; registerBtn.textContent = 'Sign Up'; }
-      }
-    }
-
-    // Init: student is default — show group section
-    regRoleChange();
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const res = await fetch('/api/faculty');
-        const data = await res.json();
-        const select = document.getElementById('reg-adviser');
-        if (select) {
-          select.innerHTML = '<option value="">Select an adviser...</option>';
-          data.faculty.forEach(f => {
-            select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
-          });
-        }
-      } catch (e) {
-        console.error('Error fetching faculty', e);
-      }
-    });
->>>>>>> Stashed changes
   </script>
 </body>
 
