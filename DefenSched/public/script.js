@@ -151,6 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load faculty advisers into signup dropdown
     async function loadRegAdviserDropdown() {
         const sel = document.getElementById('reg-adviser');
+        const coSel = document.getElementById('reg-coadviser');
         if (!sel) return;
         try {
             const res = await fetch('/api/faculty');
@@ -158,8 +159,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { faculty } = await res.json();
             sel.innerHTML = '<option value="">-- Select Adviser --</option>' +
                 faculty.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            if (coSel) {
+                coSel.innerHTML = '<option value="">None</option>' +
+                    faculty.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            }
         } catch (e) {
             sel.innerHTML = '<option value="">Could not load advisers</option>';
+            if (coSel) coSel.innerHTML = '<option value="">Could not load advisers</option>';
         }
     }
     loadRegAdviserDropdown();
@@ -262,11 +268,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         let leader_name = null;
         let member_names = [];
         let adviser_id = null;
+        let co_adviser_id = null;
 
         if (role === 'student') {
             group_name = name; // account name doubles as group name
             const adviserEl = document.getElementById('reg-adviser');
             adviser_id = adviserEl && adviserEl.value ? parseInt(adviserEl.value) : null;
+            const coAdviserEl = document.getElementById('reg-coadviser');
+            co_adviser_id = coAdviserEl && coAdviserEl.value ? parseInt(coAdviserEl.value) : null;
             if (_isGroupMode) {
                 is_group    = true;
                 leader_name = document.getElementById('reg-leader')?.value?.trim() || '';
@@ -284,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id })
+                body: JSON.stringify({ name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id, co_adviser_id })
             });
             const data = await res.json();
 

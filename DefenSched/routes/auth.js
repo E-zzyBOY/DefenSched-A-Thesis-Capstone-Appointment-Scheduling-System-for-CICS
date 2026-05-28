@@ -7,7 +7,7 @@ const db      = require('../database');
 
 // POST /api/auth/register — Users start with 'pending' status; admin must approve
 router.post('/register', (req, res) => {
-  const { name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id } = req.body;
+  const { name, email, password, role, is_group, group_name, leader_name, member_names, adviser_id, co_adviser_id } = req.body;
   if (!name || !email || !password || !role)
     return res.status(400).json({ error: 'All fields are required.' });
 
@@ -24,9 +24,20 @@ router.post('/register', (req, res) => {
   const hashed = bcrypt.hashSync(password, 10);
   try {
     const { lastInsertRowid: id } = db.prepare(`
-      INSERT INTO users (name, email, password_hash, role, group_name, is_group, members, status, adviser_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(name, email.toLowerCase().trim(), hashed, role, group_name || null, isGroup, membersJson, 'pending', (role === 'student' && !adviser_id) ? null : adviser_id || null);
+      INSERT INTO users (name, email, password_hash, role, group_name, is_group, members, status, adviser_id, co_adviser_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      name,
+      email.toLowerCase().trim(),
+      hashed,
+      role,
+      group_name || null,
+      isGroup,
+      membersJson,
+      'pending',
+      (role === 'student' && adviser_id) ? parseInt(adviser_id) || null : null,
+      (role === 'student' && co_adviser_id) ? parseInt(co_adviser_id) || null : null
+    );
 
     // Notify all admins in the system about the new signup
     const admins = db.prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1").all();
@@ -77,7 +88,7 @@ router.post('/login', (req, res) => {
 
   res.json({
     success: true,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, group_name: user.group_name, is_group: user.is_group, members: user.members, adviser_id: user.adviser_id }
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, group_name: user.group_name, is_group: user.is_group, members: user.members, adviser_id: user.adviser_id, co_adviser_id: user.co_adviser_id }
   });
 });
 
@@ -90,10 +101,11 @@ router.post('/logout', (req, res) => {
 router.get('/me', (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ error: 'Not authenticated.' });
   const user = db.prepare(`
-    SELECT u.id, u.name, u.email, u.role, u.group_name, u.is_group, u.members, u.status, u.adviser_id,
-           a.name AS adviser_name
+    SELECT u.id, u.name, u.email, u.role, u.group_name, u.is_group, u.members, u.status, u.adviser_id, u.co_adviser_id,
+           a.name AS adviser_name, ca.name AS co_adviser_name
     FROM users u
     LEFT JOIN users a ON a.id = u.adviser_id
+    LEFT JOIN users ca ON ca.id = u.co_adviser_id
     WHERE u.id = ?
   `).get(req.session.userId);
   if (!user) return res.status(401).json({ error: 'User not found.' });
