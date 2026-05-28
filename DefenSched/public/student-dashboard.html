@@ -1360,16 +1360,25 @@
               <div class="detail-value"><span class="tag tag-final" style="font-size:12px;">Final defense</span></div>
             </div>
           </div>
+
           <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">Assigned adviser</div>
           <div class="panelist-chip" style="margin-bottom:14px;">
-            <div class="panelist-dot" id="adviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—
-            </div>
+            <div class="panelist-dot" id="adviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—</div>
             <div>
               <div class="panelist-name" id="adviser-name">—</div>
               <div class="panelist-role">Primary Adviser</div>
             </div>
           </div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">Assigned co-adviser</div>
+          <div class="panelist-chip" style="margin-bottom:14px;">
+            <div class="panelist-dot" id="coadviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—</div>
+            <div>
+              <div class="panelist-name" id="coadviser-name">None</div>
+              <div class="panelist-role">Co-Adviser</div>
+            </div>
+          </div>
           <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">Assigned panelists</div>
+
           <div class="panelist-list" id="panelist-list">
             <div style="font-size:12px;color:var(--text3);">Panelists will be assigned by the Research Coordinator.
             </div>
@@ -1823,6 +1832,17 @@
       const a = _appointment;
       // Use adviser from appointment if available, otherwise fall back to the one assigned at sign-up
       const adviserName = (a && a.adviser_name) ? a.adviser_name : (_user && _user.adviser_name) ? _user.adviser_name : null;
+
+      const coAdviserName = (_user && _user.co_adviser_name) ? _user.co_adviser_name : null;
+      if (coAdviserName) {
+        const coInitials = coAdviserName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        document.getElementById('coadviser-dot').textContent = coInitials;
+        document.getElementById('coadviser-name').textContent = coAdviserName;
+      } else {
+        document.getElementById('coadviser-dot').textContent = '—';
+        document.getElementById('coadviser-name').textContent = 'None';
+      }
+
       if (!a) {
         document.getElementById('d-date').textContent = 'Not booked';
         document.getElementById('d-day').textContent = '—';
