@@ -1731,7 +1731,8 @@
       const [t, s] = titles[name] || ['Dashboard', ''];
       document.getElementById('page-title').textContent = t;
       document.getElementById('page-sub').textContent = s;
-      document.getElementById('header-book-btn').style.display = name === 'book' ? 'none' : '';
+      const hbb = document.getElementById('header-book-btn');
+      if (hbb) hbb.style.display = name === 'book' ? 'none' : '';
 
       if (name === 'schedule-board') loadScheduleBoard();
       if (name === 'book') updateBookingPanel();
@@ -1849,8 +1850,6 @@
             ? `<svg width="20" height="20" fill="none" stroke="var(--purple)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/></svg>`
             : `<svg width="20" height="20" fill="none" stroke="#a1a1aa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/></svg>`;
       const statusText = isConfirmed ? 'Confirmed — Final Defense' : isPending ? 'Pending — Awaiting Approval' : isRescheduled ? 'Rescheduled — Final Defense' : a.status.charAt(0).toUpperCase() + a.status.slice(1);
-      const cancelBtn = (a.status === 'pending')
-        ? `<button class="btn btn-danger" onclick="cancelAppointment(${a.id})">Cancel Appointment</button>` : '';
       banner.className = `status-banner ${bgClass}`;
       banner.innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;">
@@ -1860,8 +1859,7 @@
         <div class="status-text" style="color:${color};">${statusText}</div>
         <div class="status-sub" style="color:${color}aa;">${a.date || '—'} · ${a.time_slot || '—'} · ${a.venue_name || '—'}</div>
       </div>
-    </div>
-    ${cancelBtn}`;
+    </div>`;
     }
 
     // ── Overview details ──────────────────────────────────────────────
@@ -1997,8 +1995,6 @@
       const panelists = (a.panelists && a.panelists.length > 0)
         ? a.panelists.map(p => `<div style="font-size:13px;color:var(--text2);">• ${p.name}</div>`).join('')
         : '<div style="font-size:13px;color:var(--text3);">To be assigned by Research Coordinator</div>';
-      const cancelBtn = (a.status === 'pending')
-        ? `<button class="btn btn-danger" onclick="cancelAppointment(${a.id})">Cancel Appointment</button>` : '';
       el.innerHTML = `
     <div class="grid-2">
       <div class="card">
@@ -2030,6 +2026,9 @@
       </div>
     </div>`;
     }
+
+    // ── Cancel appointment (kept for internal API use only)
+    async function cancelAppointment(id) { /* disabled — students cannot cancel */ }
 
     // ── Booking dropdowns ─────────────────────────────────────────────
     let _venues = [];
@@ -2353,7 +2352,7 @@
         await fetch(`/api/notifications/${n.id}`, { method: 'DELETE' });
         close(); loadNotifications();
       };
-      if (!n.is_read) fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => loadNotifBadge());
+      if (!n.is_read) fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => { loadNotifBadge(); loadNotifications(); });
     }
 
     async function markAllRead() {

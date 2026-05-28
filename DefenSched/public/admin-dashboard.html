@@ -1606,13 +1606,13 @@
         <button class="btn btn-ghost" onclick="openRatesModal()">⚙ Update rates</button>
       </div>
       <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="stat-card" style="cursor:pointer;transition:background .15s" onclick="openRatesModal()" title="Click to edit rates">
-          <div class="stat-label" style="display:flex;align-items:center;gap:6px">Panelist rate <span style="font-size:10px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(79,142,247,.2);border-radius:4px;padding:1px 5px">edit</span></div>
+        <div class="stat-card">
+          <div class="stat-label">Panelist rate</div>
           <div class="stat-value" id="panelist-rate" style="font-size:22px">₱—</div>
           <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per session</div>
         </div>
-        <div class="stat-card" style="cursor:pointer;transition:background .15s" onclick="openRatesModal()" title="Click to edit rates">
-          <div class="stat-label" style="display:flex;align-items:center;gap:6px">Adviser rate <span style="font-size:10px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(79,142,247,.2);border-radius:4px;padding:1px 5px">edit</span></div>
+        <div class="stat-card">
+          <div class="stat-label">Adviser rate</div>
           <div class="stat-value" id="adviser-rate" style="font-size:22px">₱—</div>
           <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per session</div>
         </div>
@@ -2379,7 +2379,9 @@
     // ── NOTIFICATIONS ─────────────────────────────────────────────────
     async function loadNotifications() {
       const res = await fetch('/api/notifications'); if (!res.ok) return;
-      const { notifications } = await res.json();
+      const { notifications, unread } = await res.json();
+      const nb = document.getElementById('notif-badge');
+      if (nb) { nb.textContent = unread; nb.style.display = unread > 0 ? '' : 'none'; }
       const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
       document.getElementById('notif-list').innerHTML = notifications.length ? notifications.map(n => `
         <div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''};cursor:pointer;transition:background .15s"

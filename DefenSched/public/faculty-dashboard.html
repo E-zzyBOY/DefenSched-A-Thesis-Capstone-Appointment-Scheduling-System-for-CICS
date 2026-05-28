@@ -2521,16 +2521,77 @@
 
     // ── Load Notifications ───────────────────────────────────────────────────
     function loadNotifications() {
+      const unread = _notifications.filter(n => !n.is_read).length;
+      const nb = document.getElementById('notif-badge');
+      if (nb) { nb.textContent = unread; nb.style.display = unread > 0 ? '' : 'none'; }
       const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
-      document.getElementById('notif-list').innerHTML = _notifications.length
-        ? _notifications.map(n => `<div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''}"><div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type] || colors.info};margin-top:5px;flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;line-height:1.5">${n.message}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div></div>${!n.is_read ? `<button class="btn btn-outline btn-sm" onclick="markRead(${n.id},this)">Read</button>` : ''}</div>`).join('')
-        : '<div class="db-empty">No notifications</div>';
+      const el = document.getElementById('notif-list');
+      if (!_notifications.length) { el.innerHTML = '<div class="db-empty">No notifications</div>'; return; }
+      el.innerHTML = _notifications.map((n, i) => `
+        <div data-ni="${i}" style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;${n.is_read ? 'opacity:.55' : ''}"
+             onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+          <div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type]||colors.info};margin-top:5px;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size:13px;line-height:1.5">${n.message}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+          </div>
+          ${!n.is_read ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px"></div>' : ''}
+        </div>`).join('');
+      el.querySelectorAll('[data-ni]').forEach(row => {
+        row.addEventListener('click', () => openFacultyNotifModal(_notifications[+row.dataset.ni]));
+      });
+    }
+
+    function openFacultyNotifModal(n) {
+      const existing = document.getElementById('fac-notif-modal');
+      if (existing) existing.remove();
+      const colors = { info: 'var(--accent,#4f8ef7)', success: 'var(--success,#3ecf8e)', warning: 'var(--warning,#f5a623)', error: 'var(--danger,#e05c5c)' };
+      const icons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+      const overlay = document.createElement('div');
+      overlay.id = 'fac-notif-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML = `
+        <div style="background:var(--surface,#fff);border:1px solid var(--border);border-radius:14px;width:100%;max-width:440px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <span style="font-size:15px;font-weight:600;color:var(--text)">Notification</span>
+            <button id="fnm-x" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);line-height:1">×</button>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:16px">
+            <i class="fas ${icons[n.type]||icons.info}" style="color:${colors[n.type]||colors.info};font-size:20px;flex-shrink:0;margin-top:2px"></i>
+            <div>
+              <div style="font-size:14px;line-height:1.7;color:var(--text)">${n.message}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--mono)">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+            </div>
+          </div>
+          ${!n.is_read ? '<div style="font-size:12px;color:var(--warning,#f5a623);margin-bottom:14px;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--warning,#f5a623);display:inline-block"></span>Will be marked as read</div>' : ''}
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button id="fnm-close" style="padding:8px 16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:13px">Close</button>
+            <button id="fnm-delete" style="padding:8px 16px;background:var(--danger,#e05c5c);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Delete</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const close = () => overlay.remove();
+      document.getElementById('fnm-x').onclick = close;
+      document.getElementById('fnm-close').onclick = close;
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      document.getElementById('fnm-delete').onclick = async () => {
+        await fetch(`/api/notifications/${n.id}`, { method: 'DELETE' });
+        _notifications = _notifications.filter(x => x.id !== n.id);
+        close(); loadNotifications();
+      };
+      if (!n.is_read) {
+        fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => {
+          n.is_read = 1;
+          loadNotifications();
+        });
+      }
     }
 
     async function markRead(id, btn) {
       await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
-      btn.closest('div[style*="display:flex"]').style.opacity = '.55';
-      btn.remove();
+      const notif = _notifications.find(n => n.id === id);
+      if (notif) notif.is_read = 1;
+      loadNotifications();
     }
     async function markAllRead() {
       await fetch('/api/notifications/read-all', { method: 'PUT' });
