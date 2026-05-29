@@ -547,12 +547,12 @@
         <!-- Solo / Group — students only -->
         <div id="reg-group-section" style="width: 100%;">
           <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Adviser</p>
-          <select id="reg-adviser" style="cursor:pointer;box-sizing:border-box;">
+          <select id="reg-adviser" style="cursor:pointer;box-sizing:border-box;" onchange="syncAdviserCoAdviser()">
             <option value="">Loading faculty...</option>
           </select>
 
-          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Co-Adviser</p>
-          <select id="reg-coadviser" style="cursor:pointer;box-sizing:border-box;">
+          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Co-Adviser <span style="font-weight:400;color:#aaa;">(optional)</span></p>
+          <select id="reg-coadviser" style="cursor:pointer;box-sizing:border-box;" onchange="syncAdviserCoAdviser()">
             <option value="">None</option>
           </select>
 
@@ -751,6 +751,10 @@
           alert('Please select an adviser.');
           return;
         }
+        if (co_adviser_id && co_adviser_id === adviser_id) {
+          alert('Adviser and Co-Adviser cannot be the same person.');
+          return;
+        }
         if (isGroupMode) {
           is_group = true;
           const size = parseInt(document.getElementById('reg-group-size').value) || 2;
@@ -797,22 +801,58 @@
     // Init: student is default — show group section
     regRoleChange();
 
+    // Store full faculty list for adviser/co-adviser dropdowns
+    let _facultyList = [];
+
+    // Sync adviser & co-adviser dropdowns: prevent selecting the same person in both
+    function syncAdviserCoAdviser() {
+      const advSel = document.getElementById('reg-adviser');
+      const coSel = document.getElementById('reg-coadviser');
+      if (!advSel || !coSel) return;
+      const advVal = advSel.value;
+      const coVal = coSel.value;
+      // Rebuild co-adviser options, excluding the selected adviser
+      coSel.innerHTML = '<option value="">None</option>';
+      _facultyList.forEach(f => {
+        if (String(f.id) !== advVal) {
+          const opt = document.createElement('option');
+          opt.value = f.id;
+          opt.textContent = f.name;
+          if (String(f.id) === coVal && String(f.id) !== advVal) opt.selected = true;
+          coSel.appendChild(opt);
+        }
+      });
+      // Rebuild adviser options, excluding the selected co-adviser
+      const currentAdvHtml = advSel.innerHTML;
+      advSel.innerHTML = '<option value="">Select an adviser...</option>';
+      _facultyList.forEach(f => {
+        if (String(f.id) !== coVal) {
+          const opt = document.createElement('option');
+          opt.value = f.id;
+          opt.textContent = f.name;
+          if (String(f.id) === advVal) opt.selected = true;
+          advSel.appendChild(opt);
+        }
+      });
+    }
+
     // Load faculty list for adviser dropdowns
     (async () => {
       try {
         const res = await fetch('/api/faculty');
         const data = await res.json();
+        _facultyList = data.faculty || [];
         const select = document.getElementById('reg-adviser');
         const coSelect = document.getElementById('reg-coadviser');
         if (select) {
           select.innerHTML = '<option value="">Select an adviser...</option>';
-          (data.faculty || []).forEach(f => {
+          _facultyList.forEach(f => {
             select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
           });
         }
         if (coSelect) {
           coSelect.innerHTML = '<option value="">None</option>';
-          (data.faculty || []).forEach(f => {
+          _facultyList.forEach(f => {
             coSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`;
           });
         }

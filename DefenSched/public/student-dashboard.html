@@ -1526,6 +1526,12 @@
             </div>
             <input type="hidden" id="bk-adviser" value="">
           </div>
+          <div class="form-field" id="bk-coadviser-wrap">
+            <label>Co-Adviser</label>
+            <div class="input" id="bk-coadviser-display" style="display:flex;align-items:center;gap:8px;background:var(--surface2);cursor:default;color:var(--text2);">
+              <span id="bk-coadviser-name" style="flex:1;">Loading...</span>
+            </div>
+          </div>
           <div class="form-row">
             <div class="form-field">
               <label>Preferred Date</label>
@@ -1976,6 +1982,8 @@
         </div>
         <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">Adviser</div>
         <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">${a.adviser_name || '—'}</div>
+        ${(_user && _user.co_adviser_name) ? `<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">Co-Adviser</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">${_user.co_adviser_name}</div>` : ''}
         <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">Panelists</div>
         <div style="margin-bottom:16px;">${panelists}</div>
         ${cancelBtn}
@@ -2009,6 +2017,20 @@
           document.getElementById('bk-adviser-name').textContent = _user.adviser_name || 'Assigned Adviser';
         } else {
           document.getElementById('bk-adviser-name').textContent = 'No adviser assigned — contact your coordinator.';
+        }
+
+        // Pre-fill co-adviser display (read-only, assigned by admin)
+        const coAdvWrap = document.getElementById('bk-coadviser-wrap');
+        const coAdvNameEl = document.getElementById('bk-coadviser-name');
+        if (coAdvNameEl) {
+          if (_user && _user.co_adviser_name) {
+            coAdvNameEl.textContent = _user.co_adviser_name;
+            if (coAdvWrap) coAdvWrap.style.display = '';
+          } else {
+            coAdvNameEl.textContent = 'None assigned';
+            // Still show the field so it's visible; style it as none
+            if (coAdvWrap) coAdvWrap.style.display = '';
+          }
         }
       } catch (e) { console.error('Dropdown load error', e); }
     }
