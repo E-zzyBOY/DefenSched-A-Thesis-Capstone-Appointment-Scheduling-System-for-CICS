@@ -1386,6 +1386,28 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="card" id="fees-card">
+            <div class="card-header"><span class="card-title">Professional Fees</span></div>
+            <div style="padding:4px 0 8px">
+              <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Amount payable per panel member and adviser upon completion of your defense.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <div style="background:var(--surface2);border-radius:8px;padding:12px;text-align:center">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Per Panelist</div>
+                  <div style="font-size:20px;font-weight:700;color:var(--accent)" id="fee-panelist">₱—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px">per defense session</div>
+                </div>
+                <div style="background:var(--surface2);border-radius:8px;padding:12px;text-align:center">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Adviser</div>
+                  <div style="font-size:20px;font-weight:700;color:var(--success)" id="fee-adviser">₱—</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:2px">per defense session</div>
+                </div>
+              </div>
+              <div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:12px;color:var(--text3);display:flex;gap:8px;align-items:flex-start">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/></svg>
+                Rates are set by the Research Coordinator and are subject to change.
+              </div>
+            </div>
+          </div>
           <div class="card">
             <div class="card-header"><span class="card-title">Defense checklist</span></div>
             <div class="step-list" id="checklist">
@@ -1715,7 +1737,8 @@
       const [t, s] = titles[name] || ['Dashboard', ''];
       document.getElementById('page-title').textContent = t;
       document.getElementById('page-sub').textContent = s;
-      document.getElementById('header-book-btn').style.display = name === 'book' ? 'none' : '';
+      const hbb = document.getElementById('header-book-btn');
+      if (hbb) hbb.style.display = name === 'book' ? 'none' : '';
 
       if (name === 'schedule-board') loadScheduleBoard();
       if (name === 'book') updateBookingPanel();
@@ -1750,6 +1773,7 @@
       await loadAppointment();
       await loadBookingDropdowns();
       loadNotifBadge();
+      loadFeeRates();
       // Set min date on initial load
       const dateInput = document.getElementById('bk-date');
       if (dateInput) {
@@ -1760,6 +1784,20 @@
         dateInput.min = `${yyyy}-${mm}-${dd}`;
       }
     });
+
+    // ── Load professional fee rates ───────────────────────────────────
+    async function loadFeeRates() {
+      try {
+        const r = await fetch('/api/honoraria/report');
+        if (!r.ok) return;
+        const { rates } = await r.json();
+        const fmt = n => '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        const ep = document.getElementById('fee-panelist');
+        const ea = document.getElementById('fee-adviser');
+        if (ep) ep.textContent = fmt(rates && rates.panelist ? rates.panelist : 0);
+        if (ea) ea.textContent = fmt(rates && rates.adviser ? rates.adviser : 0);
+      } catch (e) { console.error('loadFeeRates error', e); }
+    }
 
     // ── Load appointment ──────────────────────────────────────────────
     async function loadAppointment() {
@@ -1818,8 +1856,6 @@
             ? `<svg width="20" height="20" fill="none" stroke="var(--purple)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/></svg>`
             : `<svg width="20" height="20" fill="none" stroke="#a1a1aa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/></svg>`;
       const statusText = isConfirmed ? 'Confirmed — Final Defense' : isPending ? 'Pending — Awaiting Approval' : isRescheduled ? 'Rescheduled — Final Defense' : a.status.charAt(0).toUpperCase() + a.status.slice(1);
-      const cancelBtn = (a.status === 'pending')
-        ? `<button class="btn btn-danger" onclick="cancelAppointment(${a.id})">Cancel Appointment</button>` : '';
       banner.className = `status-banner ${bgClass}`;
       banner.innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;">
@@ -1829,8 +1865,7 @@
         <div class="status-text" style="color:${color};">${statusText}</div>
         <div class="status-sub" style="color:${color}aa;">${a.date || '—'} · ${a.time_slot || '—'} · ${a.venue_name || '—'}</div>
       </div>
-    </div>
-    ${cancelBtn}`;
+    </div>`;
     }
 
     // ── Overview details ──────────────────────────────────────────────
@@ -1966,8 +2001,6 @@
       const panelists = (a.panelists && a.panelists.length > 0)
         ? a.panelists.map(p => `<div style="font-size:13px;color:var(--text2);">• ${p.name}</div>`).join('')
         : '<div style="font-size:13px;color:var(--text3);">To be assigned by Research Coordinator</div>';
-      const cancelBtn = (a.status === 'pending')
-        ? `<button class="btn btn-danger" onclick="cancelAppointment(${a.id})">Cancel Appointment</button>` : '';
       el.innerHTML = `
     <div class="grid-2">
       <div class="card">
@@ -2001,6 +2034,9 @@
       </div>
     </div>`;
     }
+
+    // ── Cancel appointment (kept for internal API use only)
+    async function cancelAppointment(id) { /* disabled — students cannot cancel */ }
 
     // ── Booking dropdowns ─────────────────────────────────────────────
     let _venues = [];
@@ -2267,30 +2303,17 @@
       <div class="notif-item"
            data-notif-id="${n.id}"
            data-notif-link="${n.link || ''}"
-           style="display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);${!n.is_read ? 'background:var(--accent-light);border-radius:8px;padding:8px 10px;' : ''}${n.link ? 'cursor:pointer;' : ''}"
+           style="display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;${!n.is_read ? 'background:var(--accent-light);border-radius:8px;padding:8px 10px;' : ''}"
       >
         <div class="notif-dot" style="margin-top:5px;flex-shrink:0;background:${dotColors[n.type] || 'var(--text3)'}; ${!n.is_read ? 'width:9px;height:9px;' : 'opacity:.4;'}"></div>
         <div style="flex:1;min-width:0">
           <div class="notif-text">${n.message}</div>
-          <div class="notif-time">${new Date(n.created_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${n.link ? ' <span style="font-size:10px;color:var(--primary);margin-left:4px;">→ View</span>' : ''}</div>
+          <div class="notif-time">${new Date(n.created_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
         </div>
-        <button data-del-id="${n.id}" style="flex-shrink:0;background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;opacity:0.7" title="Delete">&#10005;</button>
       </div>`).join('');
-        // Wire up click-to-navigate
-        el.querySelectorAll('.notif-item[data-notif-id]').forEach(item => {
-          item.addEventListener('click', e => {
-            if (e.target.closest('[data-del-id]')) return;
-            handleNotifClick(item.dataset.notifId, item.dataset.notifLink, item);
-          });
-        });
-        // Wire up delete buttons
-        el.querySelectorAll('[data-del-id]').forEach(btn => {
-          btn.addEventListener('click', async e => {
-            e.stopPropagation();
-            await fetch(`/api/notifications/${btn.dataset.delId}`, { method: 'DELETE' });
-            btn.closest('.notif-item').remove();
-            loadNotifBadge();
-          });
+        // Wire up click → modal
+        el.querySelectorAll('.notif-item[data-notif-id]').forEach((item, i) => {
+          item.addEventListener('click', () => openStudentNotifModal(notifications[i]));
         });
         const unread = notifications.filter(n => !n.is_read).length;
         document.getElementById('notif-badge').textContent = unread;
@@ -2313,6 +2336,45 @@
         const navEl = document.querySelector(`.nav-item[data-panel="${link}"]`);
         switchPanel(link, navEl || null);
       }
+    }
+
+    function openStudentNotifModal(n) {
+      const existing = document.getElementById('snotif-modal');
+      if (existing) existing.remove();
+      const colors = { info: 'var(--accent,#4f8ef7)', success: 'var(--success,#3ecf8e)', warning: 'var(--warning,#f5a623)', error: 'var(--danger,#e05c5c)' };
+      const icons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+      const overlay = document.createElement('div');
+      overlay.id = 'snotif-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML = `
+        <div style="background:var(--surface,#fff);border:1px solid var(--border);border-radius:14px;width:100%;max-width:440px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <span style="font-size:15px;font-weight:600;color:var(--text)">Notification</span>
+            <button id="snm-x" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);line-height:1">×</button>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:16px">
+            <i class="fas ${icons[n.type]||icons.info}" style="color:${colors[n.type]||colors.info};font-size:20px;flex-shrink:0;margin-top:2px"></i>
+            <div>
+              <div style="font-size:14px;line-height:1.7;color:var(--text)">${n.message}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:8px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+            </div>
+          </div>
+          ${!n.is_read ? '<div style="font-size:12px;color:var(--warning,#f5a623);margin-bottom:14px;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--warning,#f5a623);display:inline-block"></span>Will be marked as read</div>' : ''}
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button id="snm-close" style="padding:8px 16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:13px">Close</button>
+            <button id="snm-delete" style="padding:8px 16px;background:var(--danger,#e05c5c);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Delete</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const close = () => overlay.remove();
+      document.getElementById('snm-x').onclick = close;
+      document.getElementById('snm-close').onclick = close;
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      document.getElementById('snm-delete').onclick = async () => {
+        await fetch(`/api/notifications/${n.id}`, { method: 'DELETE' });
+        close(); loadNotifications();
+      };
+      if (!n.is_read) fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => { loadNotifBadge(); loadNotifications(); });
     }
 
     async function markAllRead() {

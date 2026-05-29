@@ -2,10 +2,10 @@
 
 const express = require('express');
 const session = require('express-session');
-const path    = require('path');
-const fs      = require('fs');
+const path = require('path');
+const fs = require('fs');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Ensure uploads dir exists ─────────────────────────────────────
@@ -20,20 +20,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-  secret:            'defensched-cics-2026-secret',
-  resave:            false,
+  secret: 'defensched-cics-2026-secret',
+  resave: false,
   saveUninitialized: false,
-  cookie:            { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
+  cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
 }));
 
 // ── API Routes ────────────────────────────────────────────────────
-app.use('/api/auth',          require('./routes/auth'));
-app.use('/api/appointments',  require('./routes/appointments'));
-app.use('/api/faculty',       require('./routes/faculty'));
-app.use('/api/manuscripts',   require('./routes/manuscripts'));
-app.use('/api/honoraria',     require('./routes/honoraria'));
-app.use('/api/users',         require('./routes/users'));
-app.use('/api/admin/users',   require('./routes/admin-users'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/appointments', require('./routes/appointments'));
+app.use('/api/faculty', require('./routes/faculty'));
+app.use('/api/manuscripts', require('./routes/manuscripts'));
+app.use('/api/honoraria', require('./routes/honoraria'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/admin/users', require('./routes/admin-users'));
 app.use('/api/notifications', require('./routes/notifications'));
 
 // ── Venues endpoint (admin) ───────────────────────────────────────
@@ -54,9 +54,9 @@ app.post('/api/venues', requireAuth, requireActive, requireRole('admin'), (req, 
 app.put('/api/venues/:id', requireAuth, requireActive, requireRole('admin'), (req, res) => {
   const { name, type, capacity, is_active } = req.body;
   const updates = {};
-  if (name      !== undefined) updates.name      = name;
-  if (type      !== undefined) updates.type      = type;
-  if (capacity  !== undefined) updates.capacity  = capacity;
+  if (name !== undefined) updates.name = name;
+  if (type !== undefined) updates.type = type;
+  if (capacity !== undefined) updates.capacity = capacity;
   if (is_active !== undefined) updates.is_active = is_active ? 1 : 0;
   const set = Object.keys(updates).map(k => `${k} = ?`).join(', ');
   db.prepare(`UPDATE venues SET ${set} WHERE id = ?`).run(...Object.values(updates), req.params.id);
@@ -93,7 +93,7 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start ─────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀  DefenSched is running!`);
   console.log(`    Open → http://localhost:${PORT}\n`);
 });
