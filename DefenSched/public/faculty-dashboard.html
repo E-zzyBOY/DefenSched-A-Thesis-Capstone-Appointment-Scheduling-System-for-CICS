@@ -2522,21 +2522,79 @@
     // ── Load Notifications ───────────────────────────────────────────────────
     function loadNotifications() {
       const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
-      document.getElementById('notif-list').innerHTML = _notifications.length
-        ? _notifications.map(n => `<div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''}"><div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type] || colors.info};margin-top:5px;flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;line-height:1.5">${n.message}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div></div>${!n.is_read ? `<button class="btn btn-outline btn-sm" onclick="markRead(${n.id},this)">Read</button>` : ''}</div>`).join('')
-        : '<div class="db-empty">No notifications</div>';
+      const el = document.getElementById('notif-list');
+      if (!_notifications.length) {
+        el.innerHTML = '<div class="db-empty">No notifications</div>';
+        return;
+      }
+      el.innerHTML = _notifications.map(n => `<div data-notif-id="${n.id}" style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''};cursor:pointer"><div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type] || colors.info};margin-top:5px;flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;line-height:1.5">${n.message}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div></div>${!n.is_read ? `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();markRead(${n.id},this)">Read</button>` : ''}</div>`).join('');
+      el.querySelectorAll('[data-notif-id]').forEach(div => {
+        div.addEventListener('click', e => {
+          if (e.target.closest('button')) return;
+          const id = parseInt(div.dataset.notifId);
+          const n = _notifications.find(x => x.id === id);
+          if (n) showNotifModal(n);
+        });
+      });
     }
 
     async function markRead(id, btn) {
       await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
-      btn.closest('div[style*="display:flex"]').style.opacity = '.55';
-      btn.remove();
+      if (btn && btn.closest) {
+        btn.closest('[data-notif-id]').style.opacity = '.55';
+        btn.remove();
+      }
+      loadNotifications();
     }
     async function markAllRead() {
       await fetch('/api/notifications/read-all', { method: 'PUT' });
       await fetchAll();
       loadNotifications();
       showToast('All marked as read', 'success');
+    }
+
+    function showNotifModal(n) {
+      if (document.querySelector('.notif-modal-overlay')) return;
+      const typeColors = { info: '#3B82F6', success: '#10B981', warning: '#F59E0B', error: '#EF4444' };
+      const typeIcons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+      const color = typeColors[n.type] || '#3B82F6';
+      const icon = typeIcons[n.type] || 'fa-info-circle';
+      const overlay = document.createElement('div');
+      overlay.className = 'panel-detail-overlay notif-modal-overlay';
+      overlay.onclick = function(e) { if (e.target === this) this.remove(); };
+      overlay.innerHTML = `
+        <div class="panel-detail-modal" style="width:400px">
+          <div class="panel-detail-header">
+            <div class="panel-detail-title" style="display:flex;align-items:center;gap:10px">
+              <i class="fas ${icon}" style="font-size:18px;color:${color}"></i>
+              Notification
+            </div>
+            <button class="panel-detail-close" onclick="this.closest('.panel-detail-overlay').remove()">×</button>
+          </div>
+          <div style="font-size:14px;line-height:1.6;color:var(--text,#444);margin-bottom:8px">${n.message}</div>
+          <div style="font-size:11px;color:var(--text3,#888);font-family:var(--mono,monospace);margin-top:12px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+          <div style="font-size:11px;color:var(--text3,#888);margin-top:4px">Status: ${n.is_read ? 'Read' : 'Unread'}</div>
+          <div style="display:flex;gap:8px;margin-top:20px">
+            <button class="btn btn-ghost notif-modal-btn" data-action="close" style="flex:1">Close</button>
+            ${!n.is_read ? `<button class="btn btn-primary notif-modal-btn" data-action="read" data-id="${n.id}" style="flex:1">Mark as Read</button>` : ''}
+            <button class="btn btn-danger notif-modal-btn" data-action="delete" data-id="${n.id}" style="flex:1">Delete</button>
+          </div>
+        </div>`;
+      overlay.querySelectorAll('.notif-modal-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          if (action === 'close') { overlay.remove(); return; }
+          if (action === 'read' && id) { await markRead(id, null); }
+          if (action === 'delete' && id) {
+            await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+            await fetchAll();
+            loadNotifications();
+          }
+          overlay.remove();
+        });
+      });
+      document.body.appendChild(overlay);
     }
 
     // ── THEME INITIALIZATION ──

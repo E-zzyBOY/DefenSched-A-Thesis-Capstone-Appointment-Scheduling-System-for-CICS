@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const readBtn = !n.is_read ? `<button style="cursor:pointer;background:none;border:none;color:var(--primary);font-size:0.8rem;padding:0.2rem 0.4rem;border-radius:4px;font-weight:500;" onclick="markNotifRead(${n.id})">Mark Read</button>` : '';
                     const deleteBtn = `<button style="cursor:pointer;background:none;border:none;color:var(--danger);font-size:0.8rem;padding:0.2rem 0.4rem;border-radius:4px;font-weight:500;" onclick="deleteNotification(${n.id})">Delete</button>`;
                     list.innerHTML += `
-                        <div class="notif-item ${n.is_read ? '' : 'unread'}" style="opacity: ${n.is_read ? '0.7' : '1'}" data-notif-id="${n.id}">
+                        <div class="notif-item ${n.is_read ? '' : 'unread'}" style="opacity: ${n.is_read ? '0.7' : '1'}; cursor:pointer;" data-notif-id="${n.id}">
                             <div class="notif-icon ${iconClass}"><i class="fas ${icon}"></i></div>
                             <div class="notif-text">
                                 <p>${n.message}</p>
@@ -403,8 +403,55 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     `;
                 });
+                list.querySelectorAll('.notif-item').forEach(item => {
+                    item.addEventListener('click', e => {
+                        if (e.target.closest('button')) return;
+                        const id = parseInt(item.dataset.notifId);
+                        const notif = notifications.find(n => n.id === id);
+                        if (notif) showNotifModal(notif);
+                    });
+                });
             }
         }
+    }
+
+    function showNotifModal(n) {
+        if (document.querySelector('.notif-modal-overlay')) return;
+        const typeColors = { info: '#3B82F6', success: '#10B981', warning: '#F59E0B', error: '#EF4444' };
+        const typeIcons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+        const color = typeColors[n.type] || '#3B82F6';
+        const icon = typeIcons[n.type] || 'fa-info-circle';
+        const overlay = document.createElement('div');
+        overlay.className = 'notif-modal-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;animation:fadeIn .15s ease';
+        overlay.onclick = function(e) { if (e.target === this) this.remove(); };
+        overlay.innerHTML = `
+            <div class="notif-modal-content" style="background:var(--surface,#fff);border-radius:12px;width:400px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.3);padding:24px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                    <i class="fas ${icon}" style="font-size:20px;color:${color}"></i>
+                    <span style="font-size:16px;font-weight:700;color:var(--text,#333)">Notification</span>
+                </div>
+                <div style="font-size:14px;line-height:1.6;margin-bottom:12px;color:var(--text,#444)">${n.message}</div>
+                <div style="font-size:11px;color:var(--text3,#888);font-family:var(--mono,monospace);margin-bottom:4px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+                <div style="font-size:11px;color:var(--text3,#888)">Status: ${n.is_read ? 'Read' : 'Unread'}</div>
+                <div style="display:flex;gap:8px;margin-top:20px">
+                    <button class="notif-modal-btn" data-action="close" style="flex:1;padding:8px 0;border:1px solid var(--border,#ddd);border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--text,#333)">Close</button>
+                    ${!n.is_read ? `<button class="notif-modal-btn" data-action="read" data-id="${n.id}" style="flex:1;padding:8px 0;border:none;border-radius:6px;background:var(--primary,#3B82F6);color:#fff;cursor:pointer;font-size:13px;font-weight:500">Mark as Read</button>` : ''}
+                    <button class="notif-modal-btn" data-action="delete" data-id="${n.id}" style="flex:1;padding:8px 0;border:none;border-radius:6px;background:#EF4444;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Delete</button>
+                </div>
+            </div>
+        `;
+        overlay.querySelectorAll('.notif-modal-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const action = btn.dataset.action;
+                const id = btn.dataset.id;
+                if (action === 'close') { overlay.remove(); return; }
+                if (action === 'read' && id) { await markNotifRead(id); }
+                if (action === 'delete' && id) { await deleteNotification(id); }
+                overlay.remove();
+            });
+        });
+        document.body.appendChild(overlay);
     }
 
     async function markNotifRead(id) {

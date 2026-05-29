@@ -2267,7 +2267,10 @@
       <div class="notif-item"
            data-notif-id="${n.id}"
            data-notif-link="${n.link || ''}"
-           style="display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);${!n.is_read ? 'background:var(--accent-light);border-radius:8px;padding:8px 10px;' : ''}${n.link ? 'cursor:pointer;' : ''}"
+           data-notif-type="${n.type}"
+           data-notif-created="${n.created_at}"
+           data-notif-read="${n.is_read}"
+           style="display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);${!n.is_read ? 'background:var(--accent-light);border-radius:8px;padding:8px 10px;' : ''}cursor:pointer;"
       >
         <div class="notif-dot" style="margin-top:5px;flex-shrink:0;background:${dotColors[n.type] || 'var(--text3)'}; ${!n.is_read ? 'width:9px;height:9px;' : 'opacity:.4;'}"></div>
         <div style="flex:1;min-width:0">
@@ -2276,11 +2279,13 @@
         </div>
         <button data-del-id="${n.id}" style="flex-shrink:0;background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;opacity:0.7" title="Delete">&#10005;</button>
       </div>`).join('');
-        // Wire up click-to-navigate
+        // Wire up click-to-show-modal
         el.querySelectorAll('.notif-item[data-notif-id]').forEach(item => {
           item.addEventListener('click', e => {
             if (e.target.closest('[data-del-id]')) return;
-            handleNotifClick(item.dataset.notifId, item.dataset.notifLink, item);
+            const id = parseInt(item.dataset.notifId);
+            const n = notifications.find(x => x.id === id);
+            if (n) handleNotifClick(n, item);
           });
         });
         // Wire up delete buttons
@@ -2304,15 +2309,63 @@
       loadNotifBadge();
     }
 
-    async function handleNotifClick(id, link, el) {
-      await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+    async function handleNotifClick(n, el) {
+      await fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' });
       el.style.background = '';
       el.style.opacity = '0.6';
       loadNotifBadge();
-      if (link) {
-        const navEl = document.querySelector(`.nav-item[data-panel="${link}"]`);
-        switchPanel(link, navEl || null);
+      showNotifModal(n);
+      if (n.link) {
+        const navEl = document.querySelector(`.nav-item[data-panel="${n.link}"]`);
+        switchPanel(n.link, navEl || null);
       }
+    }
+
+    function showNotifModal(n) {
+      if (document.querySelector('.notif-modal-overlay')) return;
+      const typeColors = { info: '#3B82F6', success: '#10B981', warning: '#F59E0B', error: '#EF4444' };
+      const typeIcons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+      const color = typeColors[n.type] || '#3B82F6';
+      const icon = typeIcons[n.type] || 'fa-info-circle';
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-bg open notif-modal-overlay';
+      overlay.style.cssText = 'display:flex;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;animation:fadeIn .15s ease';
+      overlay.onclick = function(e) { if (e.target === this) this.remove(); };
+      overlay.innerHTML = `
+        <div class="modal" style="width:400px;max-width:92vw;padding:24px">
+          <div class="modal-header" style="margin-bottom:16px">
+            <div>
+              <div class="modal-title" style="display:flex;align-items:center;gap:10px">
+                <i class="fas ${icon}" style="font-size:18px;color:${color}"></i>
+                Notification
+              </div>
+              <div class="modal-sub" style="margin-top:2px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+            </div>
+            <button class="modal-close" onclick="this.closest('.notif-modal-overlay').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3)">×</button>
+          </div>
+          <div style="font-size:14px;line-height:1.6;color:var(--text,#444);margin-bottom:8px">${n.message}</div>
+          <div style="font-size:11px;color:var(--text3,#888)">Status: ${n.is_read ? 'Read' : 'Unread'}</div>
+          <div class="modal-footer" style="margin-top:20px">
+            <button class="btn btn-ghost notif-modal-btn" data-action="close" style="flex:1">Close</button>
+            ${!n.is_read ? `<button class="btn btn-primary notif-modal-btn" data-action="read" data-id="${n.id}" style="flex:1">Mark as Read</button>` : ''}
+            <button class="btn btn-danger notif-modal-btn" data-action="delete" data-id="${n.id}" style="flex:1">Delete</button>
+          </div>
+        </div>`;
+      overlay.querySelectorAll('.notif-modal-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          if (action === 'close') { overlay.remove(); return; }
+          if (action === 'read' && id) { await markRead(id, overlay); loadNotifBadge(); }
+          if (action === 'delete' && id) {
+            await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+            loadNotifications();
+            loadNotifBadge();
+          }
+          overlay.remove();
+        });
+      });
+      document.body.appendChild(overlay);
     }
 
     async function markAllRead() {
