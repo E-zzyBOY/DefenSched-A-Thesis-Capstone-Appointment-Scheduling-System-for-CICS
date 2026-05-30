@@ -44,12 +44,12 @@ router.get('/report', requireAuth, requireActive, (req, res) => {
     const panelSessions = db.prepare(`
       SELECT COUNT(*) as c FROM appointment_panelists ap
       JOIN appointments a ON ap.appointment_id = a.id
-      WHERE ap.panelist_id = ? AND a.status IN ('confirmed','completed')
+      WHERE ap.panelist_id = ? AND a.status IN ('confirmed','completed') AND a.deleted_at IS NULL
     `).get(f.id).c;
 
     const adviserGroups = db.prepare(`
       SELECT COUNT(*) as c FROM appointments
-      WHERE adviser_id = ? AND status IN ('confirmed','completed')
+      WHERE adviser_id = ? AND status IN ('confirmed','completed') AND deleted_at IS NULL
     `).get(f.id).c;
 
     const panelHonoraria = panelSessions * (rates['panelist'] || 0);

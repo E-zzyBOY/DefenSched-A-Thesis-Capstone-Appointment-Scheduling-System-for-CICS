@@ -86,6 +86,16 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// ── Cleanup: purge soft-deleted appointments older than 5 days ───
+function purgeOldDeleted() {
+  const { changes } = db.prepare(
+    "DELETE FROM appointments WHERE deleted_at IS NOT NULL AND deleted_at < datetime('now', '-5 days')"
+  ).run();
+  if (changes > 0) console.log(`🧹  Purged ${changes} soft-deleted appointment(s) older than 5 days.`);
+}
+purgeOldDeleted();
+setInterval(purgeOldDeleted, 60 * 60 * 1000); // every hour
+
 // ── Global error handler ──────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('❌  Server Error:', err.message);
