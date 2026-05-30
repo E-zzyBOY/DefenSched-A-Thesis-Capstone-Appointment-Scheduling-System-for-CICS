@@ -111,6 +111,7 @@ try { db.exec(`ALTER TABLE users ADD COLUMN adviser_id INTEGER`); } catch (_) { 
 try { db.exec(`ALTER TABLE users ADD COLUMN co_adviser_id INTEGER`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE appointments ADD COLUMN thesis_title TEXT`); } catch (_) { /* column already exists */ }
 try { db.exec(`ALTER TABLE appointments ADD COLUMN meeting_link TEXT`); } catch (_) { /* column already exists */ }
+try { db.exec(`ALTER TABLE appointments ADD COLUMN deleted_at DATETIME DEFAULT NULL`); } catch (_) { /* column already exists */ }
 
 // ── Ensure honoraria_rates always has default rows ────────────────
 const ratesCount = db.prepare('SELECT COUNT(*) as c FROM honoraria_rates').get().c;

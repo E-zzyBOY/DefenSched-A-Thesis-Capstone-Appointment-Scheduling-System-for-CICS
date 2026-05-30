@@ -1132,6 +1132,13 @@
         All appointments
         <span class="nav-badge" id="pending-badge" style="display:none">0</span>
       </div>
+      <div class="nav-item" data-section="recently-deleted">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Recently Deleted
+        <span class="nav-badge" id="deleted-badge" style="display:none">0</span>
+      </div>
       <div class="nav-item" data-section="students">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -1427,6 +1434,42 @@
             <tbody id="appt-tbody">
               <tr>
                 <td colspan="8">
+                  <div class="skeleton"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENTLY DELETED -->
+    <div class="section" id="section-recently-deleted">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Recently Deleted Appointments</div>
+          <div class="page-sub">Soft-deleted appointments — recoverable for 5 days before permanent removal</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Group</th>
+                <th>Adviser</th>
+                <th>Date & Time</th>
+                <th>Venue</th>
+                <th>Status</th>
+                <th>Deleted</th>
+                <th>Expires in</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="deleted-tbody">
+              <tr>
+                <td colspan="9">
                   <div class="skeleton"></div>
                 </td>
               </tr>
@@ -1874,13 +1917,14 @@
   </div>
 
   <script>
-    let _user = null, _appointments = [], _allUsers = [], _venues = [], _honoraria = { report: [], grand_total: 0, rates: {} }, _statusApptId = null;
+    let _user = null, _appointments = [], _deletedAppointments = [], _allUsers = [], _venues = [], _honoraria = { report: [], grand_total: 0, rates: {} }, _statusApptId = null;
 
     // ── NAVIGATION (single clean handler, no duplicates) ──────────────
     const SECTION_LOADERS = {
       'overview': () => loadOverview(),
       'schedule-board': () => loadScheduleBoard(),
       'appointments': () => loadAppts(),
+      'recently-deleted': () => loadDeletedAppts(),
       'students': () => loadStudents(),
       'pending-approvals': () => loadPendingApprovals(),
       'faculty': () => loadFaculty(),
@@ -1933,15 +1977,17 @@
     // ── FETCH ALL ─────────────────────────────────────────────────────
     async function fetchAll() {
       try {
-        const [a, u, v, h, n, p] = await Promise.all([
+        const [a, u, v, h, n, p, d] = await Promise.all([
           fetch('/api/appointments'),
           fetch('/api/users'),
           fetch('/api/venues'),
           fetch('/api/honoraria/report'),
           fetch('/api/notifications'),
-          fetch('/api/admin/users/pending')
+          fetch('/api/admin/users/pending'),
+          fetch('/api/appointments/deleted')
         ]);
         _appointments = a.ok ? (await a.json()).appointments : [];
+        _deletedAppointments = d.ok ? (await d.json()).appointments : [];
         _allUsers = u.ok ? (await u.json()).users : [];
         _venues = v.ok ? (await v.json()).venues : [];
         _honoraria = h.ok ? await h.json() : { report: [], grand_total: 0, rates: {} };
@@ -1953,6 +1999,8 @@
         if (pb) { const pendingAppts = _appointments.filter(a => a.status === 'pending').length; pb.textContent = pendingAppts; pb.style.display = pendingAppts > 0 ? '' : 'none' }
         const pub = document.getElementById('pending-users-badge');
         if (pub) { const pendingUsers = pd.users.length; pub.textContent = pendingUsers; pub.style.display = pendingUsers > 0 ? '' : 'none' }
+        const dbg = document.getElementById('deleted-badge');
+        if (dbg) { const dc = _deletedAppointments.length; dbg.textContent = dc; dbg.style.display = dc > 0 ? '' : 'none' }
       } catch (e) { console.error(e) }
     }
 
@@ -2250,12 +2298,14 @@
       document.body.appendChild(modal);
     }
 
-    // ── ALL APPOINTMENTS (with inline DB status edit + delete) ──────────
+    // ── ALL APPOINTMENTS (with inline DB status edit + conditional delete) ─
     function loadAppts() {
       document.getElementById('appt-search').oninput = loadAppts;
       const q = (document.getElementById('appt-search').value || '').toLowerCase();
       const rows = _appointments.filter(a => !q || a.group_name.toLowerCase().includes(q) || (a.adviser_name || '').toLowerCase().includes(q));
-      document.getElementById('appt-tbody').innerHTML = rows.length ? rows.map(a => `<tr>
+      document.getElementById('appt-tbody').innerHTML = rows.length ? rows.map(a => {
+        const canDelete = ['completed', 'cancelled'].includes(a.status.toLowerCase());
+        return `<tr>
     <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${a.id}</td>
     <td>${a.group_name}</td>
     <td>${a.adviser_name || '—'}</td>
@@ -2266,12 +2316,19 @@
       <select class="form-select" style="padding:5px 9px;font-size:12px;width:130px" onchange="inlineUpdateApptStatus(${a.id},this.value)">
         ${['pending', 'confirmed', 'rescheduled', 'completed', 'cancelled'].map(s => `<option value="${s}"${a.status === s ? ' selected' : ''}>${s}</option>`).join('')}
       </select>
-      <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}')">
-        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
-        Delete
-      </button>
+      ${canDelete
+        ? `<button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}', '${fmtDate(a.date)}')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
+            Delete
+          </button>`
+        : `<button class="btn btn-sm" style="opacity:.4;cursor:not-allowed;background:var(--surface2);color:var(--text3);border:1px solid var(--border2)" disabled title="Only completed or cancelled appointments can be deleted">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
+            Delete
+          </button>`
+      }
     </td>
-  </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No appointments</td></tr>';
+  </tr>`;
+      }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No appointments</td></tr>';
     }
 
     async function inlineUpdateApptStatus(id, status) {
@@ -2280,14 +2337,69 @@
       else showToast('Update failed', 'error');
     }
 
-    async function deleteAppointment(id, name) {
-      if (!confirm(`Permanently delete appointment for "${name}"? This cannot be undone.`)) return;
+    async function deleteAppointment(id, name, dateStr) {
+      const msg = `Delete appointment for "${name}" (${dateStr || '—'})?\n\nThis appointment will be soft-deleted and recoverable for 5 days. After that, it will be permanently removed.`;
+      if (!confirm(msg)) return;
       try {
         const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
         const d = await res.json();
-        if (res.ok) { showToast(`Appointment deleted`, 'success'); await refresh(); loadAppts(); }
+        if (res.ok) { showToast(`Appointment deleted. Recoverable for 5 days.`, 'success'); await refresh(); loadAppts(); }
         else showToast(d.error || 'Delete failed', 'error');
       } catch { showToast('Server error during delete', 'error'); }
+    }
+
+    // ── RECENTLY DELETED APPOINTMENTS ────────────────────────────────
+    function calcExpiry(deletedAt) {
+      if (!deletedAt) return '—';
+      const deleted = new Date(deletedAt + 'Z');
+      const expiry = new Date(deleted.getTime() + 5 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const remaining = expiry - now;
+      if (remaining <= 0) return 'Expired';
+      const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+      const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      if (days > 0) return `${days}d ${hours}h`;
+      return `${hours}h`;
+    }
+
+    function loadDeletedAppts() {
+      const rows = _deletedAppointments;
+      document.getElementById('deleted-tbody').innerHTML = rows.length ? rows.map(a => `
+        <tr>
+          <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${a.id}</td>
+          <td>${a.group_name}</td>
+          <td>${a.adviser_name || '—'}</td>
+          <td style="font-family:var(--mono);font-size:12px">${fmtDate(a.date)} · ${a.time_slot || '—'}</td>
+          <td>${a.venue_name || '—'}</td>
+          <td>${fmtStatus(a.status)}</td>
+          <td style="font-family:var(--mono);font-size:12px;color:var(--danger)">${a.deleted_at ? new Date(a.deleted_at + 'Z').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+          <td style="font-family:var(--mono);font-size:12px">${calcExpiry(a.deleted_at)}</td>
+          <td style="display:flex;gap:6px">
+            <button class="btn btn-primary btn-sm" onclick="restoreAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}')">Restore</button>
+            <button class="btn btn-danger btn-sm" onclick="permanentlyDeleteAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}')">Delete Now</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:30px">No recently deleted appointments.</td></tr>';
+    }
+
+    async function restoreAppointment(id, name) {
+      if (!confirm(`Restore appointment "${name}"? It will reappear in the main appointments list.`)) return;
+      try {
+        const res = await fetch(`/api/appointments/${id}/restore`, { method: 'POST' });
+        const d = await res.json();
+        if (res.ok) { showToast(`Appointment "${name}" restored!`, 'success'); await refresh(); loadDeletedAppts(); }
+        else showToast(d.error || 'Restore failed', 'error');
+      } catch { showToast('Server error during restore', 'error'); }
+    }
+
+    async function permanentlyDeleteAppointment(id, name) {
+      if (!confirm(`Permanently delete "${name}" immediately?\n\nThis will bypass the 5-day recovery window and cannot be undone.`)) return;
+      if (!confirm(`⚠️ Are you absolutely sure? This action is permanent for "${name}".`)) return;
+      try {
+        const res = await fetch(`/api/appointments/${id}?permanent=true`, { method: 'DELETE' });
+        const d = await res.json();
+        if (res.ok) { showToast(`"${name}" permanently removed.`, 'warning'); _deletedAppointments = _deletedAppointments.filter(a => a.id !== id); loadDeletedAppts(); refresh(); }
+        else showToast(d.error || 'Delete failed', 'error');
+      } catch { showToast('Server error during permanent delete', 'error'); }
     }
 
     // ── STUDENTS (with full DB edit) ──────────────────────────────────
