@@ -97,6 +97,24 @@ router.post('/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
 
+// POST /api/auth/reset-password — allows any registered user to reset their own password by email
+router.post('/reset-password', (req, res) => {
+  const { email, new_password } = req.body;
+  if (!email || !new_password)
+    return res.status(400).json({ error: 'Email and new password are required.' });
+  if (new_password.length < 6)
+    return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+
+  const user = db.prepare('SELECT id, name FROM users WHERE email = ? AND is_active = 1')
+                 .get(email.toLowerCase().trim());
+  if (!user)
+    return res.status(404).json({ error: 'No active account found with that email address.' });
+
+  const hashed = bcrypt.hashSync(new_password, 10);
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashed, user.id);
+  res.json({ success: true, message: 'Password updated successfully. You can now log in.' });
+});
+
 // GET /api/auth/me
 router.get('/me', (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ error: 'Not authenticated.' });
