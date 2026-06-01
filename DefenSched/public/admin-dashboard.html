@@ -1179,6 +1179,13 @@
         All appointments
         <span class="nav-badge" id="pending-badge" style="display:none">0</span>
       </div>
+      <div class="nav-item" data-section="recently-deleted">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Recently Deleted
+        <span class="nav-badge" id="deleted-badge" style="display:none">0</span>
+      </div>
       <div class="nav-item" data-section="students">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -1407,9 +1414,11 @@
       </div>
       <div id="schedule-view-calendar" class="sub-panel">
         <div class="card">
-          <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <span style="font-size:12px;color:var(--text3)">Week:</span>
+            <button class="btn btn-outline btn-sm" id="cal-prev-week-btn" onclick="changeScheduleWeek(-1)">◀ Prev</button>
             <select id="calendar-week-selector" class="form-select" style="width:260px" onchange="loadScheduleCalendar()"><option>Loading weeks...</option></select>
+            <button class="btn btn-outline btn-sm" id="cal-next-week-btn" onclick="changeScheduleWeek(1)">Next ▶</button>
           </div>
           <div id="schedule-calendar-container" style="overflow-x:auto">
             <div class="skeleton"></div>
@@ -1481,6 +1490,42 @@
       </div>
     </div>
 
+    <!-- RECENTLY DELETED -->
+    <div class="section" id="section-recently-deleted">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Recently Deleted Appointments</div>
+          <div class="page-sub">Soft-deleted appointments — recoverable for 5 days before permanent removal</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Group</th>
+                <th>Adviser</th>
+                <th>Date & Time</th>
+                <th>Venue</th>
+                <th>Status</th>
+                <th>Deleted</th>
+                <th>Expires in</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="deleted-tbody">
+              <tr>
+                <td colspan="9">
+                  <div class="skeleton"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- STUDENTS / GROUPS -->
     <div class="section" id="section-students">
       <div class="page-header">
@@ -1515,12 +1560,11 @@
                 <th>Group tag</th>
                 <th>Defense date</th>
                 <th>Status</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody id="students-tbody">
               <tr>
-                <td colspan="8">
+                <td colspan="7">
                   <div class="skeleton"></div>
                 </td>
               </tr>
@@ -1589,12 +1633,11 @@
                 <th>Adviser sessions</th>
                 <th>Panel sessions</th>
                 <th>Honoraria</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody id="faculty-tbody">
               <tr>
-                <td colspan="8">
+                <td colspan="7">
                   <div class="skeleton"></div>
                 </td>
               </tr>
@@ -1656,20 +1699,17 @@
         <div class="stat-card">
           <div class="stat-label">Panelist rate</div>
           <div class="stat-value" id="panelist-rate" style="font-size:22px">₱—</div>
-          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per
-            session</div>
+          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per session</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Adviser rate</div>
           <div class="stat-value" id="adviser-rate" style="font-size:22px">₱—</div>
-          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per
-            session</div>
+          <div class="stat-change stat-neutral"><span class="stat-dot" style="background:var(--text3)"></span>Per session</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Grand total owed</div>
           <div class="stat-value" id="grand-total" style="font-size:22px">₱—</div>
-          <div class="stat-change stat-up"><span class="stat-dot" style="background:var(--success)"></span>All faculty
-          </div>
+          <div class="stat-change stat-up"><span class="stat-dot" style="background:var(--success)"></span>All faculty</div>
         </div>
       </div>
       <div class="card">
@@ -1749,6 +1789,22 @@
           </select></div>
         <div class="form-group" id="group-field"><label class="form-label">Group Name</label><input class="form-input"
             id="edit-group" placeholder="e.g. Group Alpha"></div>
+      </div>
+      <div id="adviser-fields" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Adviser</label>
+            <select class="form-select" id="edit-adviser">
+              <option value="">— None —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Co-Adviser <span style="font-weight:400;color:var(--text3);text-transform:none">(optional)</span></label>
+            <select class="form-select" id="edit-coadviser">
+              <option value="">— None —</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="form-group"><label class="form-label">New Password <span
             style="font-weight:400;color:var(--text3);text-transform:none">(blank = keep current)</span></label>
@@ -1877,6 +1933,44 @@
     </div>
   </div>
 
+  <!-- MODAL: Notification Detail -->
+  <div class="modal-overlay" id="notif-detail-modal">
+    <div class="modal" style="width:480px">
+      <div class="modal-header"><span class="modal-title">Notification</span><button class="modal-close" onclick="closeModal('notif-detail-modal')">×</button></div>
+      <div id="notif-detail-body" style="padding:4px 0 8px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('notif-detail-modal')">Close</button>
+        <button class="btn btn-danger" id="notif-detail-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Student Detail -->
+  <div class="modal-overlay" id="student-detail-modal">
+    <div class="modal" style="width:580px">
+      <div class="modal-header"><span class="modal-title" id="student-detail-title">Student Group</span><button class="modal-close" onclick="closeModal('student-detail-modal')">×</button></div>
+      <div id="student-detail-body" style="padding:2px 0 4px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('student-detail-modal')">Close</button>
+        <button class="btn btn-danger btn-sm" id="student-deactivate-btn">Deactivate</button>
+        <button class="btn btn-primary btn-sm" id="student-edit-btn">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Faculty Detail -->
+  <div class="modal-overlay" id="faculty-detail-modal">
+    <div class="modal" style="width:540px">
+      <div class="modal-header"><span class="modal-title" id="faculty-detail-title">Faculty Profile</span><button class="modal-close" onclick="closeModal('faculty-detail-modal')">×</button></div>
+      <div id="faculty-detail-body" style="padding:2px 0 4px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('faculty-detail-modal')">Close</button>
+        <button class="btn btn-danger btn-sm" id="faculty-deactivate-btn">Deactivate</button>
+        <button class="btn btn-primary btn-sm" id="faculty-edit-btn">Edit</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ── Notification modal ────────────────────────────────────────────
     let _notifCache = {};
@@ -1925,6 +2019,7 @@
       'overview': () => loadOverview(),
       'schedule-board': () => loadScheduleBoard(),
       'appointments': () => loadAppts(),
+      'recently-deleted': () => loadDeletedAppts(),
       'students': () => loadStudents(),
       'pending-approvals': () => loadPendingApprovals(),
       'faculty': () => loadFaculty(),
@@ -1977,15 +2072,17 @@
     // ── FETCH ALL ─────────────────────────────────────────────────────
     async function fetchAll() {
       try {
-        const [a, u, v, h, n, p] = await Promise.all([
+        const [a, u, v, h, n, p, d] = await Promise.all([
           fetch('/api/appointments'),
           fetch('/api/users'),
           fetch('/api/venues'),
           fetch('/api/honoraria/report'),
           fetch('/api/notifications'),
-          fetch('/api/admin/users/pending')
+          fetch('/api/admin/users/pending'),
+          fetch('/api/appointments/deleted')
         ]);
         _appointments = a.ok ? (await a.json()).appointments : [];
+        _deletedAppointments = d.ok ? (await d.json()).appointments : [];
         _allUsers = u.ok ? (await u.json()).users : [];
         _venues = v.ok ? (await v.json()).venues : [];
         _honoraria = h.ok ? await h.json() : { report: [], grand_total: 0, rates: {} };
@@ -1997,6 +2094,8 @@
         if (pb) { const pendingAppts = _appointments.filter(a => a.status === 'pending').length; pb.textContent = pendingAppts; pb.style.display = pendingAppts > 0 ? '' : 'none' }
         const pub = document.getElementById('pending-users-badge');
         if (pub) { const pendingUsers = pd.users.length; pub.textContent = pendingUsers; pub.style.display = pendingUsers > 0 ? '' : 'none' }
+        const dbg = document.getElementById('deleted-badge');
+        if (dbg) { const dc = _deletedAppointments.length; dbg.textContent = dc; dbg.style.display = dc > 0 ? '' : 'none' }
       } catch (e) { console.error(e) }
     }
 
@@ -2131,9 +2230,11 @@
       if (weekSelector.options[0].text === 'Loading weeks...') {
         weekSelector.innerHTML = '';
         const today = new Date();
-        // Get Monday of current week
+        // Get Monday of current week (proper calculation)
         const currMonday = new Date(today);
-        currMonday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+        const day = currMonday.getDay();
+        const diff = currMonday.getDate() - day + (day === 0 ? -6 : 1);
+        currMonday.setDate(diff);
         currMonday.setHours(0, 0, 0, 0);
 
         let selectedIdx = 0;
@@ -2143,19 +2244,20 @@
           const endOfWeek = new Date(startOfWeek);
           endOfWeek.setDate(startOfWeek.getDate() + 4);
           const label = `Week of ${startOfWeek.toLocaleDateString('en-PH')} - ${endOfWeek.toLocaleDateString('en-PH')}`;
-          const value = startOfWeek.toISOString().split('T')[0];
+          const value = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth()+1).padStart(2,'0')}-${String(startOfWeek.getDate()).padStart(2,'0')}`;
           const opt = new Option(label, value);
           weekSelector.appendChild(opt);
           if (w === 0) selectedIdx = weekSelector.options.length - 1;
         }
         weekSelector.selectedIndex = selectedIdx;
       }
+      updateScheduleWeekButtons();
 
       const startDate = new Date(weekSelector.value + 'T00:00:00');
       const start = 8;
       const end = 17;
       const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-      const todayStr = new Date().toISOString().split('T')[0];
+      const _td = new Date(); const todayStr = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`;
 
       // Status color map for calendar items
       const statusColors = {
@@ -2171,7 +2273,7 @@
       days.forEach((day, di) => {
         const d = new Date(startDate);
         d.setDate(startDate.getDate() + di);
-        const dStr = d.toISOString().split('T')[0];
+        const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         const isToday = dStr === todayStr;
         const dayLabel = d.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' });
         html += `<div class="schedule-calendar-cell" style="background:var(--surface2);font-weight:600;padding:8px;text-align:center;${isToday ? 'border-bottom:2px solid var(--accent);color:var(--accent)' : ''}">${dayLabel}${isToday ? ' <span style="font-size:9px;opacity:.7">TODAY</span>' : ''}</div>`;
@@ -2185,7 +2287,7 @@
         days.forEach((day, di) => {
           const d = new Date(startDate);
           d.setDate(startDate.getDate() + di);
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
           const ts = `${String(h).padStart(2, '0')}:00-${String(h + 1).padStart(2, '0')}:00`;
           const appts = _appointments.filter(a => a.date === dateStr && a.time_slot === ts && a.status !== 'cancelled');
 
@@ -2205,6 +2307,29 @@
       html += '</div>';
 
       container.innerHTML = html;
+    }
+
+    function changeScheduleWeek(delta) {
+      const select = document.getElementById('calendar-week-selector');
+      if (!select) return;
+      const newIndex = select.selectedIndex + delta;
+      if (newIndex >= 0 && newIndex < select.options.length) {
+        select.selectedIndex = newIndex;
+        loadScheduleCalendar();
+      }
+    }
+
+    function updateScheduleWeekButtons() {
+      const select = document.getElementById('calendar-week-selector');
+      const prevBtn = document.getElementById('cal-prev-week-btn');
+      const nextBtn = document.getElementById('cal-next-week-btn');
+      if (!select) return;
+      if (prevBtn) {
+        prevBtn.disabled = (select.selectedIndex <= 0);
+      }
+      if (nextBtn) {
+        nextBtn.disabled = (select.selectedIndex >= select.options.length - 1);
+      }
     }
 
     function openApptDetailModal(apptId) {
@@ -2268,12 +2393,14 @@
       document.body.appendChild(modal);
     }
 
-    // ── ALL APPOINTMENTS (with inline DB status edit + delete) ──────────
+    // ── ALL APPOINTMENTS (with inline DB status edit + conditional delete) ─
     function loadAppts() {
       document.getElementById('appt-search').oninput = loadAppts;
       const q = (document.getElementById('appt-search').value || '').toLowerCase();
       const rows = _appointments.filter(a => !q || a.group_name.toLowerCase().includes(q) || (a.adviser_name || '').toLowerCase().includes(q));
-      document.getElementById('appt-tbody').innerHTML = rows.length ? rows.map(a => `<tr>
+      document.getElementById('appt-tbody').innerHTML = rows.length ? rows.map(a => {
+        const canDelete = ['completed', 'cancelled'].includes(a.status.toLowerCase());
+        return `<tr>
     <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${a.id}</td>
     <td>${a.group_name}</td>
     <td>${a.adviser_name || '—'}</td>
@@ -2284,12 +2411,19 @@
       <select class="form-select" style="padding:5px 9px;font-size:12px;width:130px" onchange="inlineUpdateApptStatus(${a.id},this.value)">
         ${['pending', 'confirmed', 'rescheduled', 'completed', 'cancelled'].map(s => `<option value="${s}"${a.status === s ? ' selected' : ''}>${s}</option>`).join('')}
       </select>
-      <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}')">
-        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
-        Delete
-      </button>
+      ${canDelete
+        ? `<button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}', '${fmtDate(a.date)}')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
+            Delete
+          </button>`
+        : `<button class="btn btn-sm" style="opacity:.4;cursor:not-allowed;background:var(--surface2);color:var(--text3);border:1px solid var(--border2)" disabled title="Only completed or cancelled appointments can be deleted">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="2"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke-width="2" stroke-linecap="round"/></svg>
+            Delete
+          </button>`
+      }
     </td>
-  </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No appointments</td></tr>';
+  </tr>`;
+      }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No appointments</td></tr>';
     }
 
     async function inlineUpdateApptStatus(id, status) {
@@ -2298,14 +2432,69 @@
       else showToast('Update failed', 'error');
     }
 
-    async function deleteAppointment(id, name) {
-      if (!confirm(`Permanently delete appointment for "${name}"? This cannot be undone.`)) return;
+    async function deleteAppointment(id, name, dateStr) {
+      const msg = `Delete appointment for "${name}" (${dateStr || '—'})?\n\nThis appointment will be soft-deleted and recoverable for 5 days. After that, it will be permanently removed.`;
+      if (!confirm(msg)) return;
       try {
         const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
         const d = await res.json();
-        if (res.ok) { showToast(`Appointment deleted`, 'success'); await refresh(); loadAppts(); }
+        if (res.ok) { showToast(`Appointment deleted. Recoverable for 5 days.`, 'success'); await refresh(); loadAppts(); }
         else showToast(d.error || 'Delete failed', 'error');
       } catch { showToast('Server error during delete', 'error'); }
+    }
+
+    // ── RECENTLY DELETED APPOINTMENTS ────────────────────────────────
+    function calcExpiry(deletedAt) {
+      if (!deletedAt) return '—';
+      const deleted = new Date(deletedAt + 'Z');
+      const expiry = new Date(deleted.getTime() + 5 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const remaining = expiry - now;
+      if (remaining <= 0) return 'Expired';
+      const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+      const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      if (days > 0) return `${days}d ${hours}h`;
+      return `${hours}h`;
+    }
+
+    function loadDeletedAppts() {
+      const rows = _deletedAppointments;
+      document.getElementById('deleted-tbody').innerHTML = rows.length ? rows.map(a => `
+        <tr>
+          <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${a.id}</td>
+          <td>${a.group_name}</td>
+          <td>${a.adviser_name || '—'}</td>
+          <td style="font-family:var(--mono);font-size:12px">${fmtDate(a.date)} · ${a.time_slot || '—'}</td>
+          <td>${a.venue_name || '—'}</td>
+          <td>${fmtStatus(a.status)}</td>
+          <td style="font-family:var(--mono);font-size:12px;color:var(--danger)">${a.deleted_at ? new Date(a.deleted_at + 'Z').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+          <td style="font-family:var(--mono);font-size:12px">${calcExpiry(a.deleted_at)}</td>
+          <td style="display:flex;gap:6px">
+            <button class="btn btn-primary btn-sm" onclick="restoreAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}')">Restore</button>
+            <button class="btn btn-danger btn-sm" onclick="permanentlyDeleteAppointment(${a.id}, '${a.group_name.replace(/'/g, "\\'")}')">Delete Now</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:30px">No recently deleted appointments.</td></tr>';
+    }
+
+    async function restoreAppointment(id, name) {
+      if (!confirm(`Restore appointment "${name}"? It will reappear in the main appointments list.`)) return;
+      try {
+        const res = await fetch(`/api/appointments/${id}/restore`, { method: 'POST' });
+        const d = await res.json();
+        if (res.ok) { showToast(`Appointment "${name}" restored!`, 'success'); await refresh(); loadDeletedAppts(); }
+        else showToast(d.error || 'Restore failed', 'error');
+      } catch { showToast('Server error during restore', 'error'); }
+    }
+
+    async function permanentlyDeleteAppointment(id, name) {
+      if (!confirm(`Permanently delete "${name}" immediately?\n\nThis will bypass the 5-day recovery window and cannot be undone.`)) return;
+      if (!confirm(`⚠️ Are you absolutely sure? This action is permanent for "${name}".`)) return;
+      try {
+        const res = await fetch(`/api/appointments/${id}?permanent=true`, { method: 'DELETE' });
+        const d = await res.json();
+        if (res.ok) { showToast(`"${name}" permanently removed.`, 'warning'); _deletedAppointments = _deletedAppointments.filter(a => a.id !== id); loadDeletedAppts(); refresh(); }
+        else showToast(d.error || 'Delete failed', 'error');
+      } catch { showToast('Server error during permanent delete', 'error'); }
     }
 
     // ── STUDENTS (with full DB edit) ──────────────────────────────────
@@ -2314,20 +2503,16 @@
       const students = _allUsers.filter(u => u.role === 'student' && u.is_active !== 0 && (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
       document.getElementById('students-tbody').innerHTML = students.length ? students.map(s => {
         const appt = _appointments.find(a => a.student_id === s.id) || null;
-        return `<tr>
+        return `<tr style="cursor:pointer;transition:background .12s" onclick='openStudentModal(${JSON.stringify(s).replace(/'/g,"&#39;")})' onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
       <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${s.id}</td>
-      <td>${s.name}</td>
+      <td><span style="color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(79,142,247,.4)">${s.name}</span></td>
       <td style="max-width:200px">${fmtMembers(s.members)}</td>
       <td style="font-size:12px;color:var(--text3)">${s.email}</td>
       <td style="font-size:12px;color:var(--text3)">${s.group_name || '—'}</td>
       <td>${appt ? `${fmtDate(appt.date)} · ${appt.time_slot || '—'}` : '<span style="color:var(--text3)">Not scheduled</span>'}</td>
       <td><span class="badge ${s.is_active ? 'badge-active' : 'badge-inactive'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick='openEditUserModal(${JSON.stringify(s)})'>Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deactivateUser(${s.id},'${s.name.replace(/'/g, "\\'")}')">Deactivate</button>
-      </div></td>
     </tr>`;
-      }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">No student groups found</td></tr>';
+      }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No student groups found</td></tr>';
     }
 
     // ── PENDING USER APPROVALS ───────────────────────────────────────
@@ -2374,20 +2559,16 @@
       const faculty = _allUsers.filter(u => u.role === 'faculty' && u.is_active !== 0);
       document.getElementById('faculty-tbody').innerHTML = faculty.length ? faculty.map(f => {
         const hr = _honoraria.report.find(r => r.id === f.id) || { adviser_groups: 0, panel_sessions: 0, total: 0 };
-        return `<tr>
+        return `<tr style="cursor:pointer;transition:background .12s" onclick='openFacultyModal(${JSON.stringify(f).replace(/'/g,"&#39;")})' onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
       <td style="color:var(--text3);font-family:var(--mono);font-size:11px">#${f.id}</td>
-      <td>${f.name}</td>
+      <td><span style="color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(79,142,247,.4)">${f.name}</span></td>
       <td style="font-size:12px;color:var(--text3)">${f.email}</td>
       <td><span class="badge ${f.is_active ? 'badge-active' : 'badge-inactive'}">${f.is_active ? 'Active' : 'Inactive'}</span></td>
       <td style="font-family:var(--mono)">${hr.adviser_groups}</td>
       <td style="font-family:var(--mono)">${hr.panel_sessions}</td>
       <td style="font-family:var(--mono);color:var(--success)">${fmtPeso(hr.total)}</td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick='openEditUserModal(${JSON.stringify(f)})'>Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deactivateUser(${f.id},'${f.name.replace(/'/g, "\\'")}')">Deactivate</button>
-      </div></td>
     </tr>`;
-      }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">No faculty found</td></tr>';
+      }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No faculty found</td></tr>';
     }
 
     // ── VENUES ────────────────────────────────────────────────────────
@@ -2421,26 +2602,184 @@
     // ── NOTIFICATIONS ─────────────────────────────────────────────────
     async function loadNotifications() {
       const res = await fetch('/api/notifications'); if (!res.ok) return;
-      const { notifications } = await res.json();
-      const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
-      _notifCache = {};
-      notifications.forEach(n => _notifCache[n.id] = n);
-      document.getElementById('notif-list').innerHTML = notifications.length
-        ? notifications.map(n => `<div class="notif-row${n.is_read ? ' read' : ''}" onclick="openNotifModal(${n.id})">
-            <div class="notif-row-dot" style="background:${colors[n.type] || colors.info}"></div>
-            <div class="notif-row-body">
-              <div class="notif-row-msg">${n.message}</div>
-              <div class="notif-row-time">${new Date(n.created_at).toLocaleString('en-PH', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}</div>
-            </div>
-            ${!n.is_read ? '<div class="notif-row-unread"></div>' : ''}
-          </div>`).join('')
-        : '<div style="padding:40px;text-align:center;color:var(--text3)">No notifications</div>';
-      const unread = notifications.filter(n => !n.is_read).length;
+      const { notifications, unread } = await res.json();
       const nb = document.getElementById('notif-badge');
-      nb.textContent = unread; nb.style.display = unread ? '' : 'none';
+      if (nb) { nb.textContent = unread; nb.style.display = unread > 0 ? '' : 'none'; }
+      const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
+      document.getElementById('notif-list').innerHTML = notifications.length ? notifications.map(n => `
+        <div style="display:flex;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.55' : ''};cursor:pointer;transition:background .15s"
+             onclick='openNotifModal(${JSON.stringify(n).replace(/'/g,"&#39;")})'
+             onmouseenter="this.style.background='var(--surface2)'"
+             onmouseleave="this.style.background=''">
+          <div style="width:8px;height:8px;border-radius:50%;background:${colors[n.type]||colors.info};margin-top:6px;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-size:13px;line-height:1.5">${n.message}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+          </div>
+          ${!n.is_read ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px"></div>' : ''}
+        </div>`).join('') : '<div style="padding:40px;text-align:center;color:var(--text3)">No notifications</div>';
     }
 
-    async function markAllRead() { await fetch('/api/notifications/read-all', { method: 'PUT' }); loadNotifications(); showToast('All marked as read', 'success'); }
+    function openNotifModal(n) {
+      const colors = { info: 'var(--accent)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
+      const icons = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+      document.getElementById('notif-detail-body').innerHTML = `
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:16px;background:var(--surface2);border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--border)">
+          <i class="fas ${icons[n.type]||icons.info}" style="color:${colors[n.type]||colors.info};font-size:22px;margin-top:2px;flex-shrink:0"></i>
+          <div>
+            <div style="font-size:14px;line-height:1.7;color:var(--text)">${n.message}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:8px">${new Date(n.created_at).toLocaleString('en-PH')}</div>
+          </div>
+        </div>
+        ${!n.is_read ? '<div style="font-size:12px;color:var(--warning);display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--warning);display:inline-block"></span>Unread notification — will be marked as read</div>' : ''}
+      `;
+      document.getElementById('notif-detail-delete-btn').onclick = async () => {
+        await fetch(`/api/notifications/${n.id}`, { method: 'DELETE' });
+        closeModal('notif-detail-modal');
+        await loadNotifications();
+        showToast('Notification deleted', 'success');
+      };
+      openModal('notif-detail-modal');
+      if (!n.is_read) fetch(`/api/notifications/${n.id}/read`, { method: 'PUT' }).then(() => loadNotifications());
+    }
+
+    async function markRead(id, btn) { await fetch(`/api/notifications/${id}/read`, { method: 'PUT' }); loadNotifications(); }
+    async function deleteNotif(id) { await fetch(`/api/notifications/${id}`, { method: 'DELETE' }); loadNotifications(); }
+    async function markAllRead() { await fetch('/api/notifications/read-all', { method: 'PUT' }); loadNotifications(); document.getElementById('notif-badge').style.display = 'none'; showToast('All marked as read', 'success') }
+
+    // ── STUDENT DETAIL MODAL ──────────────────────────────────────────
+    function openStudentModal(s) {
+      const appt = _appointments.find(a => a.student_id === s.id) || null;
+      const coAdviser = s.co_adviser_id ? _allUsers.find(u => u.id === s.co_adviser_id) : null;
+      document.getElementById('student-detail-title').textContent = s.group_name || s.name;
+      let membersHtml = '';
+      if (s.members) {
+        try {
+          const { leader, members } = JSON.parse(s.members);
+          const all = [leader, ...(members || [])].filter(Boolean);
+          membersHtml = all.map((n, i) => `<span style="display:inline-flex;align-items:center;gap:3px;background:${i===0?'rgba(79,142,247,.12)':'var(--surface)'};color:${i===0?'var(--accent)':'var(--text2)'};border:1px solid ${i===0?'rgba(79,142,247,.25)':'var(--border2)'};border-radius:99px;padding:3px 10px;font-size:12px;margin:2px">${i===0?'★ ':''}${n}</span>`).join(' ');
+        } catch { membersHtml = '<span style="color:var(--text3)">—</span>'; }
+      } else { membersHtml = '<span style="color:var(--text3);font-size:12px">Solo</span>'; }
+
+      const panelists = appt && appt.panelists ? appt.panelists : [];
+      document.getElementById('student-detail-body').innerHTML = `
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Group Name</div>
+              <div style="font-size:13px;font-weight:500">${s.group_name || '—'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Email</div>
+              <div style="font-size:12px;color:var(--text2);word-break:break-all">${s.email}</div>
+            </div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px">Members</div>
+            <div style="line-height:2">${membersHtml}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Adviser</div>
+              <div style="font-size:13px">${appt && appt.adviser_name ? appt.adviser_name : '<span style="color:var(--text3)">Not assigned</span>'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Co-Adviser</div>
+              <div style="font-size:13px">${coAdviser ? coAdviser.name : '<span style="color:var(--text3)">None</span>'}</div>
+            </div>
+          </div>
+          ${panelists.length ? `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px">Panelists</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">${panelists.map(p=>`<span style="background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:99px;padding:3px 10px;font-size:12px">${p.name}</span>`).join('')}</div>
+          </div>` : ''}
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Venue</div>
+              <div style="font-size:13px">${appt && appt.venue_name ? appt.venue_name : '<span style="color:var(--text3)">Not booked</span>'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Defense Date</div>
+              <div style="font-size:13px">${appt && appt.date ? fmtDate(appt.date) : '<span style="color:var(--text3)">—</span>'}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Time Slot</div>
+              <div style="font-size:13px;font-family:var(--mono)">${appt && appt.time_slot ? appt.time_slot : '<span style="color:var(--text3)">—</span>'}</div>
+            </div>
+          </div>
+          ${appt && appt.thesis_title ? `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Thesis Title</div>
+            <div style="font-size:13px;font-style:italic;color:var(--text2)">"${appt.thesis_title}"</div>
+          </div>` : ''}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Account Status</div>
+              <div><span class="badge ${s.is_active ? 'badge-active' : 'badge-inactive'}">${s.is_active ? 'Active' : 'Inactive'}</span></div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Defense Status</div>
+              <div>${appt ? fmtStatus(appt.status) : '<span style="color:var(--text3);font-size:12px">Not scheduled</span>'}</div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('student-edit-btn').onclick = () => { closeModal('student-detail-modal'); openEditUserModal(s); };
+      document.getElementById('student-deactivate-btn').onclick = () => { closeModal('student-detail-modal'); deactivateUser(s.id, s.name); };
+      openModal('student-detail-modal');
+    }
+
+    // ── FACULTY DETAIL MODAL ──────────────────────────────────────────
+    function openFacultyModal(f) {
+      const hr = _honoraria.report.find(r => r.id === f.id) || { adviser_groups: 0, panel_sessions: 0, total: 0, adviser_honoraria: 0, panel_honoraria: 0 };
+      const advisedGroups = _appointments.filter(a => a.adviser_id === f.id && a.status !== 'cancelled');
+      document.getElementById('faculty-detail-title').textContent = f.name;
+      document.getElementById('faculty-detail-body').innerHTML = `
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Full Name</div>
+              <div style="font-size:13px;font-weight:500">${f.name}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Email</div>
+              <div style="font-size:12px;color:var(--text2);word-break:break-all">${f.email}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;text-align:center">
+              <div style="font-size:26px;font-weight:700;color:var(--accent)">${hr.adviser_groups}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Adviser Sessions</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;text-align:center">
+              <div style="font-size:26px;font-weight:700;color:var(--purple)">${hr.panel_sessions}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Panel Sessions</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;text-align:center">
+              <div style="font-size:18px;font-weight:700;color:var(--success)">${fmtPeso(hr.total)}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Total Honoraria</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Adviser Pay</div>
+              <div style="font-size:15px;font-family:var(--mono);font-weight:600">${fmtPeso(hr.adviser_honoraria)}</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Panel Pay</div>
+              <div style="font-size:15px;font-family:var(--mono);font-weight:600">${fmtPeso(hr.panel_honoraria)}</div>
+            </div>
+          </div>
+          ${advisedGroups.length ? `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px">Advising Groups</div>
+            ${advisedGroups.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${a.group_name}</span>${fmtStatus(a.status)}</div>`).join('')}
+          </div>` : ''}
+          <div style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Account Status</div>
+            <div><span class="badge ${f.is_active ? 'badge-active' : 'badge-inactive'}">${f.is_active ? 'Active' : 'Inactive'}</span></div>
+          </div>
+        </div>`;
+      document.getElementById('faculty-edit-btn').onclick = () => { closeModal('faculty-detail-modal'); openEditUserModal(f); };
+      document.getElementById('faculty-deactivate-btn').onclick = () => { closeModal('faculty-detail-modal'); deactivateUser(f.id, f.name); };
+      openModal('faculty-detail-modal');
+    }
 
     // ── SYSTEM SETTINGS ───────────────────────────────────────────────
     async function loadSettings() {
@@ -2480,35 +2819,40 @@
       const appt = _appointments.find(a => a.id === apptId);
       const currentPanelists = (appt?.panelists || []).map(p => p.id);
       const adviserId = appt?.adviser_id || null;
+      const coAdviserId = appt?.co_adviser_id || null;
 
       // Get all active faculty members
       const faculty = _allUsers.filter(u => u.role === 'faculty' && u.is_active !== 0);
 
-      renderPanelistList(faculty, currentPanelists, adviserId);
+      renderPanelistList(faculty, currentPanelists, adviserId, coAdviserId);
       updatePanelistCount();
       openModal('panelist-modal');
     }
 
-    function renderPanelistList(faculty, selectedIds, adviserId) {
+    function renderPanelistList(faculty, selectedIds, adviserId, coAdviserId) {
       const list = document.getElementById('panelist-list');
       if (!faculty.length) {
         list.innerHTML = '<div class="db-empty">No active faculty members found.</div>';
         return;
       }
       list.innerHTML = faculty.map(f => {
-        const isAdviser = f.id === adviserId;
-        const isChecked = !isAdviser && selectedIds.includes(f.id);
-        const disabledAttr = isAdviser ? 'disabled' : '';
-        const itemStyle = isAdviser ? 'opacity:.5;cursor:not-allowed;' : '';
-        const adviserBadge = isAdviser
+        const isAdviser   = f.id === adviserId;
+        const isCoAdviser = coAdviserId && f.id === coAdviserId;
+        const isBlocked   = isAdviser || isCoAdviser;
+        const isChecked   = !isBlocked && selectedIds.includes(f.id);
+        const disabledAttr = isBlocked ? 'disabled' : '';
+        const itemStyle    = isBlocked ? 'opacity:.5;cursor:not-allowed;' : '';
+        const badge = isAdviser
           ? `<span class="panelist-conflict-badge">⚠ Current Adviser</span>`
+          : isCoAdviser
+          ? `<span class="panelist-conflict-badge" style="background:rgba(167,139,250,.15);color:var(--purple,#a78bfa);border-color:rgba(167,139,250,.35);">⚠ Co-Adviser</span>`
           : '';
         return `
           <label class="panelist-item${isChecked ? ' selected' : ''}" for="pan-${f.id}" style="${itemStyle}">
             <input type="checkbox" id="pan-${f.id}" value="${f.id}" ${isChecked ? 'checked' : ''} ${disabledAttr}
               onchange="togglePanelistItem(this)">
             <div style="flex:1">
-              <div class="panelist-name" style="display:flex;align-items:center;gap:8px">${f.name}${adviserBadge}</div>
+              <div class="panelist-name" style="display:flex;align-items:center;gap:8px">${f.name}${badge}</div>
               <div class="panelist-email">${f.email}</div>
             </div>
           </label>`;
@@ -2568,11 +2912,22 @@
       document.getElementById('edit-group').value = u.group_name || '';
       document.getElementById('edit-password').value = '';
       document.getElementById('edit-status').value = u.is_active ? '1' : '0';
+      // Populate adviser / co-adviser dropdowns for students
+      if (u.role === 'student') {
+        const faculty = _allUsers.filter(f => f.role === 'faculty' && f.is_active !== 0);
+        const noneOpt = '<option value="">&#x2014; None &#x2014;</option>';
+        const opts = faculty.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+        document.getElementById('edit-adviser').innerHTML = noneOpt + opts;
+        document.getElementById('edit-coadviser').innerHTML = noneOpt + opts;
+        document.getElementById('edit-adviser').value = u.adviser_id || '';
+        document.getElementById('edit-coadviser').value = u.co_adviser_id || '';
+      }
       toggleGroupField(); openModal('user-modal');
     }
     function toggleGroupField() {
       const role = document.getElementById('edit-role').value;
       document.getElementById('group-field').style.display = role === 'student' ? '' : 'none';
+      document.getElementById('adviser-fields').style.display = role === 'student' ? '' : 'none';
     }
     async function saveUser() {
       const id = document.getElementById('edit-uid').value;
@@ -2587,6 +2942,16 @@
       if (!id && !password) { showToast('Password required for new users', 'error'); return }
       const body = { name, email, role, group_name: role === 'student' ? group : null, is_active: parseInt(status) };
       if (password) body.password = password;
+      // Save adviser/co-adviser for student users
+      if (role === 'student') {
+        const advVal = document.getElementById('edit-adviser').value;
+        const coAdvVal = document.getElementById('edit-coadviser').value;
+        body.adviser_id    = advVal   ? parseInt(advVal)   : null;
+        body.co_adviser_id = coAdvVal ? parseInt(coAdvVal) : null;
+        if (body.adviser_id && body.adviser_id === body.co_adviser_id) {
+          showToast('Adviser and Co-Adviser cannot be the same person.', 'error'); return;
+        }
+      }
       const btn = document.getElementById('save-user-btn');
       btn.disabled = true; btn.textContent = 'Saving…';
       try {

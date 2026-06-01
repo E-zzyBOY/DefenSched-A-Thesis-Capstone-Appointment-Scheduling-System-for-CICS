@@ -675,12 +675,12 @@
         <!-- Solo / Group — students only -->
         <div id="reg-group-section" style="width: 100%;">
           <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Adviser</p>
-          <select id="reg-adviser" style="cursor:pointer;box-sizing:border-box;">
+          <select id="reg-adviser" style="cursor:pointer;box-sizing:border-box;" onchange="syncAdviserCoAdviser()">
             <option value="">Loading faculty...</option>
           </select>
 
-          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Co-Adviser</p>
-          <select id="reg-coadviser" style="cursor:pointer;box-sizing:border-box;">
+          <p style="font-size:11px;color:#888;margin:2px 0 6px;">Assigned Co-Adviser <span style="font-weight:400;color:#aaa;">(optional)</span></p>
+          <select id="reg-coadviser" style="cursor:pointer;box-sizing:border-box;" onchange="syncAdviserCoAdviser()">
             <option value="">None</option>
           </select>
 
@@ -926,6 +926,10 @@
           alert('Please select an adviser.');
           return;
         }
+        if (co_adviser_id && co_adviser_id === adviser_id) {
+          alert('Adviser and Co-Adviser cannot be the same person.');
+          return;
+        }
         if (isGroupMode) {
           is_group = true;
           const size = parseInt(document.getElementById('reg-group-size').value) || 2;
@@ -1070,15 +1074,20 @@
           body: JSON.stringify({ email, new_password: newPw })
         });
         const data = await res.json();
-        if (res.ok) {
-          succEl.textContent = '✓ Password reset successfully! You can now log in.';
-          succEl.style.display = 'block';
-          document.getElementById('fp-newpw').value = '';
-          document.getElementById('fp-confirmpw').value = '';
-          setTimeout(() => closeForgotModal(), 2500);
-        } else {
-          errEl.textContent = data.error || 'Reset failed. Please try again.';
-          errEl.style.display = 'block';
+        _facultyList = data.faculty || [];
+        const select = document.getElementById('reg-adviser');
+        const coSelect = document.getElementById('reg-coadviser');
+        if (select) {
+          select.innerHTML = '<option value="">Select an adviser...</option>';
+          _facultyList.forEach(f => {
+            select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+          });
+        }
+        if (coSelect) {
+          coSelect.innerHTML = '<option value="">None</option>';
+          _facultyList.forEach(f => {
+            coSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+          });
         }
       } catch {
         errEl.textContent = 'Server error. Please try again later.';

@@ -33,11 +33,15 @@ router.get('/', requireAuth, requireActive, (req, res) => {
   let rows;
   if (role === 'admin') {
     rows = db.prepare(`
-      SELECT a.*, u.name student_name, u.members student_members, u.is_group student_is_group, f.name adviser_name, v.name venue_name
+      SELECT a.*, u.name student_name, u.members student_members, u.is_group student_is_group,
+             u.co_adviser_id co_adviser_id, ca.name co_adviser_name,
+             f.name adviser_name, v.name venue_name
       FROM appointments a
       JOIN users u ON a.student_id = u.id
       JOIN users f ON a.adviser_id = f.id
       JOIN venues v ON a.venue_id  = v.id
+      LEFT JOIN users ca ON u.co_adviser_id = ca.id
+      WHERE a.deleted_at IS NULL
       ORDER BY a.date DESC, a.time_slot
     `).all();
   } else if (role === 'faculty') {
@@ -48,7 +52,7 @@ router.get('/', requireAuth, requireActive, (req, res) => {
       JOIN users f ON a.adviser_id = f.id
       JOIN venues v ON a.venue_id  = v.id
       LEFT JOIN appointment_panelists ap ON a.id = ap.appointment_id
-      WHERE a.adviser_id = ? OR ap.panelist_id = ?
+      WHERE (a.adviser_id = ? OR ap.panelist_id = ?) AND a.deleted_at IS NULL
       ORDER BY a.date DESC, a.time_slot
     `).all(userId, userId);
   } else {
@@ -57,7 +61,7 @@ router.get('/', requireAuth, requireActive, (req, res) => {
       FROM appointments a
       JOIN users f ON a.adviser_id = f.id
       JOIN venues v ON a.venue_id  = v.id
-      WHERE a.student_id = ?
+      WHERE a.student_id = ? AND a.deleted_at IS NULL
       ORDER BY a.date DESC
     `).all(userId);
   }
@@ -104,7 +108,7 @@ router.get('/check-conflict', requireAuth, requireActive, (req, res) => {
   `).get(adviser_id, date, time_slot);
   const advHasConflict = db.prepare(`
     SELECT id FROM appointments
-    WHERE adviser_id = ? AND date = ? AND time_slot = ? AND status != 'cancelled' ${ex}
+    WHERE adviser_id = ? AND date = ? AND time_slot = ? AND status != 'cancelled' AND deleted_at IS NULL ${ex}
   `).get(adviser_id, date, time_slot);
   const adviser = advHasConflict
     ? { ok: false, message: 'Adviser has a conflict at this time.' }
@@ -120,7 +124,7 @@ router.get('/check-conflict', requireAuth, requireActive, (req, res) => {
       const conflict = db.prepare(`
         SELECT a.id FROM appointments a
         JOIN appointment_panelists ap ON a.id = ap.appointment_id
-        WHERE ap.panelist_id = ? AND a.date = ? AND a.time_slot = ? AND a.status != 'cancelled' ${ex}
+        WHERE ap.panelist_id = ? AND a.date = ? AND a.time_slot = ? AND a.status != 'cancelled' AND a.deleted_at IS NULL ${ex}
       `).get(pid, date, time_slot);
       const name = db.prepare('SELECT name FROM users WHERE id = ?').get(pid)?.name || '';
       if (conflict) allOk = false;
@@ -135,7 +139,7 @@ router.get('/check-conflict', requireAuth, requireActive, (req, res) => {
 
   const venConflict = db.prepare(`
     SELECT id FROM appointments
-    WHERE venue_id = ? AND date = ? AND time_slot = ? AND status != 'cancelled' ${ex}
+    WHERE venue_id = ? AND date = ? AND time_slot = ? AND status != 'cancelled' AND deleted_at IS NULL ${ex}
   `).get(venue_id, date, time_slot);
   const venue = venConflict
     ? { ok: false, message: 'Venue is already booked at this time.' }
@@ -162,6 +166,7 @@ router.post('/', requireAuth, requireActive, (req, res) => {
       SELECT id FROM appointments
       WHERE student_id = ? 
         AND LOWER(status) NOT IN ('cancelled', 'completed', 'none', 'rejected')
+        AND deleted_at IS NULL
     `).get(userId);
     
     if (existing) {
@@ -181,10 +186,10 @@ router.post('/', requireAuth, requireActive, (req, res) => {
   if (!advAvail)
     return res.status(409).json({ error: 'Adviser has not marked this time as available.' });
 
-  if (db.prepare(`SELECT id FROM appointments WHERE adviser_id=? AND date=? AND time_slot=? AND LOWER(status)!='cancelled'`).get(adviser_id, date, time_slot))
+  if (db.prepare(`SELECT id FROM appointments WHERE adviser_id=? AND date=? AND time_slot=? AND LOWER(status)!='cancelled' AND deleted_at IS NULL`).get(adviser_id, date, time_slot))
     return res.status(409).json({ error: 'Conflict: Adviser has a conflict at that time.' });
 
-  if (db.prepare(`SELECT id FROM appointments WHERE venue_id=? AND date=? AND time_slot=? AND LOWER(status)!='cancelled'`).get(venue_id, date, time_slot))
+  if (db.prepare(`SELECT id FROM appointments WHERE venue_id=? AND date=? AND time_slot=? AND LOWER(status)!='cancelled' AND deleted_at IS NULL`).get(venue_id, date, time_slot))
     return res.status(409).json({ error: 'Conflict: Venue is already booked.' });
 
   const { lastInsertRowid: apptId } = db.prepare(`
@@ -369,6 +374,15 @@ router.put('/:id/panelists', requireAuth, requireActive, requireRole('admin'), (
     });
   }
 
+  // ←— Conflict guard: co-adviser cannot also be a panelist for the same group
+  const student = db.prepare('SELECT co_adviser_id FROM users WHERE id = ?').get(appt.student_id);
+  if (student?.co_adviser_id && pIds.includes(student.co_adviser_id)) {
+    const coAdviser = db.prepare('SELECT name FROM users WHERE id = ?').get(student.co_adviser_id);
+    return res.status(409).json({
+      error: `${coAdviser?.name || 'The co-adviser'} is already assigned as the co-adviser for this group and cannot also serve as a panelist.`
+    });
+  }
+
   // Get previous panelists for notification comparison
   const prevPanelists = db.prepare('SELECT panelist_id FROM appointment_panelists WHERE appointment_id = ?').all(req.params.id).map(r => r.panelist_id);
 
@@ -389,16 +403,67 @@ router.put('/:id/panelists', requireAuth, requireActive, requireRole('admin'), (
   res.json({ success: true });
 });
 
-// ── DELETE /api/appointments/:id — hard delete ────────────────────
+// ── DELETE /api/appointments/:id — soft delete (5-day recovery) ───
 router.delete('/:id', requireAuth, requireActive, requireRole('admin'), (req, res) => {
   const appt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(req.params.id);
   if (!appt) return res.status(404).json({ error: 'Appointment not found.' });
 
-  // Notify student before removing
-  try { notify(appt.student_id, `Your appointment on ${appt.date} has been deleted by the admin.`, 'error'); } catch (_) {}
+  // Permanent delete (bypasses recovery window) — only for already soft-deleted
+  if (req.query.permanent === 'true') {
+    if (!appt.deleted_at) {
+      return res.status(403).json({ error: 'Use a regular delete first (soft delete), then permanent delete from the recovery section.' });
+    }
+    db.prepare('DELETE FROM appointments WHERE id = ?').run(req.params.id);
+    try { notify(appt.student_id, `Your appointment on ${appt.date} has been permanently removed.`, 'error'); } catch (_) {}
+    return res.json({ success: true, permanent: true });
+  }
 
-  // Hard delete — appointment_panelists cascades via FK ON DELETE CASCADE
-  db.prepare('DELETE FROM appointments WHERE id = ?').run(req.params.id);
+  const eligible = ['completed', 'cancelled'];
+  if (!eligible.includes(appt.status.toLowerCase())) {
+    return res.status(403).json({
+      error: 'Only completed or cancelled appointments can be deleted. Current status: ' + appt.status
+    });
+  }
+
+  // Already soft-deleted
+  if (appt.deleted_at) {
+    return res.status(400).json({ error: 'This appointment is already deleted. Use permanent delete or restore it first.' });
+  }
+
+  // Soft delete — mark as deleted with timestamp (5-day recovery window)
+  db.prepare("UPDATE appointments SET deleted_at = datetime('now'), updated_at = ? WHERE id = ?")
+    .run(new Date().toISOString(), req.params.id);
+
+  try { notify(appt.student_id, `Your ${appt.status} appointment on ${appt.date} has been deleted by the admin. It can be recovered within 5 days.`, 'warning'); } catch (_) {}
+
+  res.json({ success: true });
+});
+
+// ── GET /api/appointments/deleted — soft-deleted appointments ────
+router.get('/deleted', requireAuth, requireActive, requireRole('admin'), (req, res) => {
+  const rows = db.prepare(`
+    SELECT a.*, u.name student_name, u.members student_members,
+           f.name adviser_name, v.name venue_name
+    FROM appointments a
+    JOIN users u ON a.student_id = u.id
+    JOIN users f ON a.adviser_id = f.id
+    JOIN venues v ON a.venue_id  = v.id
+    WHERE a.deleted_at IS NOT NULL
+      AND a.deleted_at >= datetime('now', '-5 days')
+    ORDER BY a.deleted_at DESC
+  `).all();
+  res.json({ appointments: attachPanelists(rows) });
+});
+
+// ── POST /api/appointments/:id/restore — restore soft-deleted ────
+router.post('/:id/restore', requireAuth, requireActive, requireRole('admin'), (req, res) => {
+  const appt = db.prepare('SELECT * FROM appointments WHERE id = ? AND deleted_at IS NOT NULL').get(req.params.id);
+  if (!appt) return res.status(404).json({ error: 'Deleted appointment not found.' });
+
+  db.prepare("UPDATE appointments SET deleted_at = NULL, updated_at = ? WHERE id = ?")
+    .run(new Date().toISOString(), req.params.id);
+
+  try { notify(appt.student_id, `Your appointment on ${appt.date} has been restored by the admin.`, 'success'); } catch (_) {}
 
   res.json({ success: true });
 });
