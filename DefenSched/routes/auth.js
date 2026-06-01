@@ -11,6 +11,10 @@ router.post('/register', (req, res) => {
   if (!name || !email || !password || !role)
     return res.status(400).json({ error: 'All fields are required.' });
 
+  // Enforce institutional email domain
+  if (!email.toLowerCase().trim().endsWith('@cics.edu.ph'))
+    return res.status(400).json({ error: 'Only @cics.edu.ph email addresses are allowed to register.' });
+
   // Build members JSON for group student accounts
   let membersJson = null;
   let isGroup = 0;
