@@ -679,102 +679,6 @@
     }
 
     /* ── Notifications ── */
-    /* ── Notification detail modal ───────────────────────────── */
-    .nm-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .55);
-      backdrop-filter: blur(3px);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s
-    }
-
-    .nm-overlay.open {
-      opacity: 1;
-      pointer-events: all
-    }
-
-    .nm-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      width: min(440px, 92vw);
-      overflow: hidden;
-      transform: translateY(10px);
-      transition: transform .2s
-    }
-
-    .nm-overlay.open .nm-box {
-      transform: translateY(0)
-    }
-
-    .nm-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border)
-    }
-
-    .nm-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0
-    }
-
-    .nm-title {
-      font-size: 14px;
-      font-weight: 600;
-      flex: 1;
-      color: var(--text)
-    }
-
-    .nm-close {
-      background: none;
-      border: none;
-      font-size: 22px;
-      color: var(--text3);
-      cursor: pointer;
-      line-height: 1;
-      padding: 0 4px
-    }
-
-    .nm-close:hover {
-      color: var(--text)
-    }
-
-    .nm-body {
-      padding: 20px 20px 16px
-    }
-
-    .nm-message {
-      font-size: 14px;
-      line-height: 1.65;
-      color: var(--text);
-      margin: 0 0 12px;
-      white-space: pre-wrap
-    }
-
-    .nm-time {
-      font-size: 11px;
-      color: var(--text3);
-      font-family: var(--mono)
-    }
-
-    .nm-footer {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      padding: 12px 20px;
-      border-top: 1px solid var(--border)
-    }
-
     .notif-item {
       display: flex;
       gap: 10px;
@@ -1459,8 +1363,7 @@
 
           <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">Assigned adviser</div>
           <div class="panelist-chip" style="margin-bottom:14px;">
-            <div class="panelist-dot" id="adviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—
-            </div>
+            <div class="panelist-dot" id="adviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—</div>
             <div>
               <div class="panelist-name" id="adviser-name">—</div>
               <div class="panelist-role">Primary Adviser</div>
@@ -1468,8 +1371,7 @@
           </div>
           <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">Assigned co-adviser</div>
           <div class="panelist-chip" style="margin-bottom:14px;">
-            <div class="panelist-dot" id="coadviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—
-            </div>
+            <div class="panelist-dot" id="coadviser-dot" style="background:linear-gradient(135deg,#0d9488,#2563eb);">—</div>
             <div>
               <div class="panelist-name" id="coadviser-name">None</div>
               <div class="panelist-role">Co-Adviser</div>
@@ -1641,8 +1543,7 @@
           </div>
           <div class="form-field">
             <label>Adviser</label>
-            <div class="input" id="bk-adviser-display"
-              style="display:flex;align-items:center;gap:8px;background:var(--surface2);cursor:default;color:var(--text2);">
+            <div class="input" id="bk-adviser-display" style="display:flex;align-items:center;gap:8px;background:var(--surface2);cursor:default;color:var(--text2);">
               <span id="bk-adviser-name" style="flex:1;">Loading...</span>
             </div>
             <input type="hidden" id="bk-adviser" value="">
@@ -1944,7 +1845,7 @@
       const isPending = a.status === 'pending';
       const isRescheduled = a.status === 'rescheduled';
       const isCompleted = a.status == 'completed';
-      const bgClass = isConfirmed ? 'status-confirmed' : isPending ? 'status-pending' : isRescheduled ? 'status-rescheduled' : isCompleted ? 'status-completed' : 'status-none';
+      const bgClass = isConfirmed ? 'status-confirmed' : isPending ? 'status-pending' : isRescheduled ? 'status-rescheduled' : isCompleted ? 'status-completed' :'status-none';
       const color = isConfirmed ? 'var(--success)' : isPending ? 'var(--warning)' : isRescheduled ? 'var(--purple)' : 'var(--text3)';
       const iconBg = isConfirmed ? '#dcfce7' : isPending ? '#fef9c3' : isRescheduled ? 'var(--purple-bg)' : 'var(--surface2)';
       const icon = isConfirmed
@@ -2297,7 +2198,7 @@
           showToast(d.error || 'Cancel failed.', 'error');
         }
       } catch { showToast('Server error.', 'error'); }
-    }
+    } 
 
     // ── Manuscript ────────────────────────────────────────────────────
     async function loadManuscript() {
@@ -2387,32 +2288,6 @@
     }
 
     // ── Notifications ─────────────────────────────────────────────────
-    let _notifCache = {};
-    function openNotifModal(id) {
-      const n = _notifCache[id]; if (!n) return;
-      const colors = { info: 'var(--info)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
-      document.getElementById('nm-dot').style.background = colors[n.type] || colors.info;
-      document.getElementById('nm-message').textContent = n.message;
-      document.getElementById('nm-time').textContent = new Date(n.created_at).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
-      const readBtn = document.getElementById('nm-read-btn');
-      readBtn.style.display = n.is_read ? 'none' : '';
-      readBtn.onclick = () => nmMarkRead(id);
-      document.getElementById('nm-delete-btn').onclick = () => nmDelete(id);
-      document.getElementById('nm-overlay').classList.add('open');
-    }
-    function closeNotifModal() { document.getElementById('nm-overlay').classList.remove('open'); }
-    async function nmMarkRead(id) {
-      await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
-      _notifCache[id].is_read = 1;
-      document.getElementById('nm-read-btn').style.display = 'none';
-      loadNotifications();
-    }
-    async function nmDelete(id) {
-      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
-      closeNotifModal();
-      loadNotifications();
-    }
-
     async function loadNotifications() {
       const el = document.getElementById('notif-list');
       try {
@@ -2421,11 +2296,8 @@
         const { notifications } = await r.json();
         if (!notifications.length) {
           el.innerHTML = '<div class="empty-state"><div class="empty-title">No notifications</div><div class="empty-sub">You\'re all caught up!</div></div>';
-          document.getElementById('notif-badge').style.display = 'none';
           return;
         }
-        _notifCache = {};
-        notifications.forEach(n => _notifCache[n.id] = n);
         const dotColors = { info: 'var(--info)', success: 'var(--success)', warning: 'var(--warning)', error: 'var(--danger)' };
         el.innerHTML = notifications.map(n => `
       <div class="notif-item"
@@ -2594,25 +2466,6 @@
     // Poll badge sync every 2s
     setInterval(syncBnavBadge, 2000);
   </script>
-  <!-- Notification detail modal -->
-  <div class="nm-overlay" id="nm-overlay" onclick="if(event.target===this)closeNotifModal()">
-    <div class="nm-box">
-      <div class="nm-header">
-        <div class="nm-dot" id="nm-dot"></div>
-        <span class="nm-title">Notification</span>
-        <button class="nm-close" onclick="closeNotifModal()">×</button>
-      </div>
-      <div class="nm-body">
-        <p class="nm-message" id="nm-message"></p>
-        <div class="nm-time" id="nm-time"></div>
-      </div>
-      <div class="nm-footer">
-        <button class="btn btn-ghost btn-sm" id="nm-read-btn">Mark as Read</button>
-        <button class="btn btn-ghost btn-sm" id="nm-delete-btn" style="color:var(--danger)">Delete</button>
-        <button class="btn btn-ghost btn-sm" onclick="closeNotifModal()">Close</button>
-      </div>
-    </div>
-  </div>
 </body>
 
 </html>
