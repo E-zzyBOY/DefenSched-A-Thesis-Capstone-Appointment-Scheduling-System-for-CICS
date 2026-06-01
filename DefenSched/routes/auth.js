@@ -15,6 +15,11 @@ router.post('/register', (req, res) => {
   if (!email.toLowerCase().trim().endsWith('@s.msumain.edu.ph'))
     return res.status(400).json({ error: 'Only @s.msumain.edu.ph email addresses are allowed to register.' });
 
+  const nameRegex = /^[a-zA-Z\s\-\.]+$/;
+  
+  if (!nameRegex.test(name)) {
+  return res.status(400).json({ error: 'Name contains invalid characters. Use only letters, spaces, hyphens, or periods.' });
+  }
   // Build members JSON for group student accounts
   let membersJson = null;
   let isGroup = 0;
