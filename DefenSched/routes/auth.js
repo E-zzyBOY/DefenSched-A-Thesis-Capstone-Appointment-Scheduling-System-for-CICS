@@ -101,6 +101,26 @@ router.post('/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
 
+// POST /api/auth/change-password — authenticated user changes own password
+router.post('/change-password', (req, res) => {
+  if (!req.session?.userId) return res.status(401).json({ error: 'Not authenticated.' });
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password)
+    return res.status(400).json({ error: 'Current and new passwords are required.' });
+  if (new_password.length < 6)
+    return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+
+  const user = db.prepare('SELECT id, password_hash FROM users WHERE id = ?').get(req.session.userId);
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+
+  if (!bcrypt.compareSync(current_password, user.password_hash))
+    return res.status(401).json({ error: 'Current password is incorrect.' });
+
+  const newHash = bcrypt.hashSync(new_password, 10);
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(newHash, user.id);
+  res.json({ success: true, message: 'Password changed successfully.' });
+});
+
 // GET /api/auth/me
 router.get('/me', (req, res) => {
   if (!req.session?.userId) return res.status(401).json({ error: 'Not authenticated.' });

@@ -909,6 +909,313 @@
       animation: fadeIn .2s ease;
     }
 
+    /* ── Settings Panel ── */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .settings-nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: sticky;
+      top: 20px;
+    }
+
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+      border-bottom: 1px solid var(--border);
+      user-select: none;
+    }
+
+    .settings-nav-item:last-child {
+      border-bottom: none;
+    }
+
+    .settings-nav-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .settings-nav-item.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .settings-nav-item svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    .settings-section {
+      display: none;
+    }
+
+    .settings-section.active {
+      display: block;
+    }
+
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .settings-card-header {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .settings-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .settings-card-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .settings-card-body {
+      padding: 20px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .settings-row:first-child {
+      padding-top: 0;
+    }
+
+    .settings-row-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .settings-row-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    /* Toggle switch */
+    .toggle-wrap {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--border2);
+      border-radius: 99px;
+      transition: background 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-input:checked + .toggle-slider {
+      background: var(--accent);
+    }
+
+    .toggle-input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Theme color swatches */
+    .theme-swatches {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .theme-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .theme-swatch.active {
+      border-color: var(--text);
+    }
+
+    .theme-swatch:hover {
+      transform: scale(1.1);
+    }
+
+    /* Font size buttons */
+    .font-size-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .font-size-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text2);
+      cursor: pointer;
+      font-family: var(--font);
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .font-size-btn.active, .font-size-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* View mode buttons */
+    .view-mode-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .view-mode-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text2);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .view-mode-btn.active, .view-mode-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .settings-save-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+
+    .pw-input-wrap {
+      position: relative;
+    }
+
+    .pw-toggle-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text3);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .settings-layout {
+        grid-template-columns: 1fr;
+      }
+      .settings-nav {
+        position: static;
+        display: flex;
+        overflow-x: auto;
+        border-radius: var(--radius);
+      }
+      .settings-nav-item {
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-size: 12px;
+        padding: 10px 12px;
+      }
+      .settings-nav-item:last-child {
+        border-right: none;
+      }
+      .settings-nav-item span.sni-label {
+        display: none;
+      }
+    }
+
     .ver-badge {
       font-family: var(--mono);
       font-size: 10px;
@@ -1265,6 +1572,14 @@
         </svg>
         Notifications
         <span class="nav-badge" id="notif-badge" style="display:none;"></span>
+      </div>
+      <div class="nav-section">Account</div>
+      <div class="nav-item" data-panel="settings" onclick="switchPanel('settings', this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" stroke-width="1.8" />
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        Settings
       </div>
     </nav>
     <div class="sidebar-user">
@@ -1677,6 +1992,405 @@
 
   </main>
 
+  <!-- ══ PANEL: Settings ══════════════════════════════════════ -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-layout">
+
+      <!-- Left nav -->
+      <nav class="settings-nav" id="settings-side-nav">
+        <div class="settings-nav-item active" data-stab="profile" onclick="switchSettingsTab('profile',this)">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4" stroke-width="1.8"/><path d="M6 21v-1a6 6 0 0112 0v1" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="sni-label">My Profile</span>
+        </div>
+        <div class="settings-nav-item" data-stab="account" onclick="switchSettingsTab('account',this)">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" stroke-width="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="sni-label">Account & Security</span>
+        </div>
+        <div class="settings-nav-item" data-stab="notifications" onclick="switchSettingsTab('notifications',this)">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="sni-label">Notifications</span>
+        </div>
+        <div class="settings-nav-item" data-stab="defense" onclick="switchSettingsTab('defense',this)">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke-width="1.8"/></svg>
+          <span class="sni-label">Defense Prefs</span>
+        </div>
+        <div class="settings-nav-item" data-stab="appearance" onclick="switchSettingsTab('appearance',this)">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke-width="1.8"/><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="sni-label">Appearance</span>
+        </div>
+        <div class="settings-nav-item" data-stab="privacy" onclick="switchSettingsTab('privacy',this)">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="sni-label">Privacy</span>
+        </div>
+      </nav>
+
+      <!-- Right content -->
+      <div id="settings-content-area">
+
+        <!-- ── My Profile ── -->
+        <div class="settings-section active" id="stab-profile">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--accent-light);">
+                <svg width="16" height="16" fill="none" stroke="var(--accent)" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4" stroke-width="2"/><path d="M6 21v-1a6 6 0 0112 0v1" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">My Profile</div>
+                <div class="settings-card-sub">Your account information</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <!-- Avatar -->
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border);">
+                <div id="settings-avatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#ea580c);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;">G4</div>
+                <div>
+                  <div style="font-size:15px;font-weight:700;" id="settings-display-name">Loading...</div>
+                  <div style="font-size:12px;color:var(--text3);margin-top:3px;">Student Account</div>
+                  <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);" id="settings-email">—</div>
+                </div>
+              </div>
+              <!-- Info rows -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Full Name / Group Name</div>
+                  <div class="settings-row-sub" id="sinfo-name">—</div>
+                </div>
+                <span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;">Read-only</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Email Address</div>
+                  <div class="settings-row-sub" id="sinfo-email">—</div>
+                </div>
+                <span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;">Read-only</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Assigned Adviser</div>
+                  <div class="settings-row-sub" id="sinfo-adviser">—</div>
+                </div>
+                <span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;">Assigned by admin</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Co-Adviser</div>
+                  <div class="settings-row-sub" id="sinfo-coadviser">—</div>
+                </div>
+                <span style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;">Assigned by admin</span>
+              </div>
+              <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div>
+                  <div class="settings-row-label">Account Role</div>
+                  <div class="settings-row-sub">Student</div>
+                </div>
+                <span style="font-size:11px;font-weight:600;background:var(--accent-light);color:var(--accent);border-radius:99px;padding:3px 10px;">Student</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Account & Security ── -->
+        <div class="settings-section" id="stab-account">
+          <!-- Change Password -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--warning-bg);">
+                <svg width="16" height="16" fill="none" stroke="var(--warning)" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">Change Password</div>
+                <div class="settings-card-sub">Update your account password</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="form-field">
+                  <label>Current Password</label>
+                  <div class="pw-input-wrap">
+                    <input id="pw-current" type="password" class="input" placeholder="Enter current password" autocomplete="current-password">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('pw-current',this)">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label>New Password</label>
+                  <div class="pw-input-wrap">
+                    <input id="pw-new" type="password" class="input" placeholder="Enter new password (min. 6 characters)" autocomplete="new-password">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('pw-new',this)">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label>Confirm New Password</label>
+                  <div class="pw-input-wrap">
+                    <input id="pw-confirm" type="password" class="input" placeholder="Re-enter new password" autocomplete="new-password">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('pw-confirm',this)">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <!-- Password strength indicator -->
+                <div id="pw-strength-bar" style="display:none;">
+                  <div style="display:flex;gap:4px;margin-bottom:4px;">
+                    <div id="pwsb-1" style="flex:1;height:4px;border-radius:4px;background:var(--border2);"></div>
+                    <div id="pwsb-2" style="flex:1;height:4px;border-radius:4px;background:var(--border2);"></div>
+                    <div id="pwsb-3" style="flex:1;height:4px;border-radius:4px;background:var(--border2);"></div>
+                    <div id="pwsb-4" style="flex:1;height:4px;border-radius:4px;background:var(--border2);"></div>
+                  </div>
+                  <div id="pw-strength-label" style="font-size:11px;color:var(--text3);"></div>
+                </div>
+                <div id="pw-match-hint" style="font-size:12px;display:none;"></div>
+                <button class="btn btn-primary" style="width:fit-content;" onclick="changePassword()" id="pw-save-btn">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-width="2"/><polyline points="17 21 17 13 7 13 7 21" stroke-width="2"/><polyline points="7 3 7 8 15 8" stroke-width="2"/></svg>
+                  Save New Password
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Session info -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--info-bg);">
+                <svg width="16" height="16" fill="none" stroke="var(--info)" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">Active Session</div>
+                <div class="settings-card-sub">Your current login session</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Current Device</div>
+                  <div class="settings-row-sub" id="session-device">This browser</div>
+                </div>
+                <span style="font-size:11px;font-weight:600;background:var(--success-bg);color:var(--success);border-radius:99px;padding:3px 10px;">Active</span>
+              </div>
+              <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div>
+                  <div class="settings-row-label">Sign Out</div>
+                  <div class="settings-row-sub">Log out of your account on this device</div>
+                </div>
+                <button class="btn btn-danger" onclick="document.getElementById('logout-btn').click()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2" stroke-linecap="round"/></svg>
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Notifications ── -->
+        <div class="settings-section" id="stab-notifications">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--accent-light);">
+                <svg width="16" height="16" fill="none" stroke="var(--accent)" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">Notification Preferences</div>
+                <div class="settings-card-sub">Choose which notifications you receive</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label">Defense Schedule Notifications</div><div class="settings-row-sub">When your defense is confirmed or rescheduled</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="notif-defense" checked onchange="saveNotifPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Appointment Approval Notifications</div><div class="settings-row-sub">When your appointment request is approved</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="notif-approval" checked onchange="saveNotifPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Appointment Rejection Notifications</div><div class="settings-row-sub">When your appointment request is rejected</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="notif-rejection" checked onchange="saveNotifPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Reminder Notifications</div><div class="settings-row-sub">Day-before reminders for your defense</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="notif-reminder" checked onchange="saveNotifPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div><div class="settings-row-label">In-App Notifications</div><div class="settings-row-sub">Show notification badge in sidebar</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="notif-inapp" checked onchange="saveNotifPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Defense Preferences ── -->
+        <div class="settings-section" id="stab-defense">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--orange-bg);">
+                <svg width="16" height="16" fill="none" stroke="var(--orange)" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-width="2"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">Defense Preferences</div>
+                <div class="settings-card-sub">Your preferred defense schedule settings</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="form-field">
+                  <label>Preferred Defense Time</label>
+                  <select class="input" id="pref-time" onchange="saveDefensePrefs()">
+                    <option value="">No preference</option>
+                    <option value="morning">Morning (8:00 AM – 12:00 PM)</option>
+                    <option value="afternoon">Afternoon (1:00 PM – 5:00 PM)</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Preferred Venue (Optional)</label>
+                  <select class="input" id="pref-venue" onchange="saveDefensePrefs()">
+                    <option value="">No preference</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Scheduling Notes / Constraints</label>
+                  <textarea class="input" id="pref-notes" rows="3" placeholder="Any scheduling constraints or notes for the coordinator..." style="resize:vertical;" onchange="saveDefensePrefs()"></textarea>
+                </div>
+                <div style="font-size:12px;color:var(--text3);background:var(--info-bg);border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;line-height:1.6;">
+                  ℹ️ These preferences are stored locally and help you remember your preferences. The final schedule is determined by the Research Coordinator.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Appearance ── -->
+        <div class="settings-section" id="stab-appearance">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--purple-bg);">
+                <svg width="16" height="16" fill="none" stroke="var(--purple)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke-width="2"/><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">Appearance</div>
+                <div class="settings-card-sub">Customize how DefenSched looks</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <!-- Dark/Light Mode -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Theme</div>
+                  <div class="settings-row-sub">Switch between light and dark mode</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="view-mode-btn" id="theme-light-btn" onclick="setTheme('light')" style="display:flex;align-items:center;gap:5px;">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke-width="2"/><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707" stroke-width="2" stroke-linecap="round"/></svg>
+                    Light
+                  </button>
+                  <button class="view-mode-btn" id="theme-dark-btn" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:5px;">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-width="2" stroke-linecap="round"/></svg>
+                    Dark
+                  </button>
+                </div>
+              </div>
+              <!-- Accent Color -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Accent Color</div>
+                  <div class="settings-row-sub">Choose your interface highlight color</div>
+                </div>
+                <div class="theme-swatches" id="color-swatches">
+                  <div class="theme-swatch active" data-color="#6d28d9" title="Purple (Default)" style="background:#6d28d9;" onclick="setAccentColor('#6d28d9','#5b21b6',this)"></div>
+                  <div class="theme-swatch" data-color="#2563eb" title="Blue" style="background:#2563eb;" onclick="setAccentColor('#2563eb','#1d4ed8',this)"></div>
+                  <div class="theme-swatch" data-color="#0d9488" title="Teal" style="background:#0d9488;" onclick="setAccentColor('#0d9488','#0f766e',this)"></div>
+                  <div class="theme-swatch" data-color="#16a34a" title="Green" style="background:#16a34a;" onclick="setAccentColor('#16a34a','#15803d',this)"></div>
+                  <div class="theme-swatch" data-color="#ea580c" title="Orange" style="background:#ea580c;" onclick="setAccentColor('#ea580c','#c2410c',this)"></div>
+                  <div class="theme-swatch" data-color="#e11d48" title="Rose" style="background:#e11d48;" onclick="setAccentColor('#e11d48','#be123c',this)"></div>
+                </div>
+              </div>
+              <!-- Font Size -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Font Size</div>
+                  <div class="settings-row-sub">Adjust text size for readability</div>
+                </div>
+                <div class="font-size-btns">
+                  <button class="font-size-btn" id="fs-sm" onclick="setFontSize('small',this)" style="font-size:11px;">A-</button>
+                  <button class="font-size-btn active" id="fs-md" onclick="setFontSize('medium',this)" style="font-size:13px;">A</button>
+                  <button class="font-size-btn" id="fs-lg" onclick="setFontSize('large',this)" style="font-size:15px;">A+</button>
+                </div>
+              </div>
+              <!-- Compact / Comfortable -->
+              <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div>
+                  <div class="settings-row-label">View Density</div>
+                  <div class="settings-row-sub">Control spacing and padding</div>
+                </div>
+                <div class="view-mode-btns">
+                  <button class="view-mode-btn" id="density-compact" onclick="setDensity('compact',this)">Compact</button>
+                  <button class="view-mode-btn active" id="density-comfortable" onclick="setDensity('comfortable',this)">Comfortable</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Privacy ── -->
+        <div class="settings-section" id="stab-privacy">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--success-bg);">
+                <svg width="16" height="16" fill="none" stroke="var(--success)" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title">Privacy Settings</div>
+                <div class="settings-card-sub">Control your information visibility</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label">Show Contact Information</div><div class="settings-row-sub">Allow others to see your email on the schedule board</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="priv-contact" onchange="savePrivacyPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Allow Adviser Contact Access</div><div class="settings-row-sub">Adviser can see your contact details</div></div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="priv-adviser" checked onchange="savePrivacyPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div>
+                  <div class="settings-row-label">Data Privacy Consent</div>
+                  <div class="settings-row-sub">I consent to DefenSched processing my scheduling data for academic purposes</div>
+                </div>
+                <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="priv-consent" checked onchange="savePrivacyPrefs()"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+          <!-- Danger zone -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon" style="background:var(--danger-bg);">
+                <svg width="16" height="16" fill="none" stroke="var(--danger)" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-width="2"/><line x1="12" y1="9" x2="12" y2="13" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="settings-card-title" style="color:var(--danger);">Danger Zone</div>
+                <div class="settings-card-sub">Irreversible account actions</div>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row" style="border-bottom:none;padding-bottom:0;">
+                <div>
+                  <div class="settings-row-label">Sign Out from All Devices</div>
+                  <div class="settings-row-sub">This will immediately end your current session</div>
+                </div>
+                <button class="btn btn-danger" onclick="document.getElementById('logout-btn').click()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2" stroke-linecap="round"/></svg>
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settings-content-area -->
+    </div><!-- /settings-layout -->
+  </div><!-- /panel-settings -->
+
   <div id="toast-container"></div>
 
   <script>
@@ -1733,6 +2447,7 @@
         'my-schedule': ['My Schedule', 'Your confirmed defense details'],
         'manuscript': ['Manuscript Submission', 'Upload your defense manuscript'],
         'notifications': ['Notifications', 'System alerts and updates'],
+        'settings': ['Settings', 'Manage your account and preferences'],
       };
       const [t, s] = titles[name] || ['Dashboard', ''];
       document.getElementById('page-title').textContent = t;
@@ -1745,6 +2460,7 @@
       if (name === 'my-schedule') renderMySchedule();
       if (name === 'manuscript') loadManuscript();
       if (name === 'notifications') loadNotifications();
+      if (name === 'settings') initSettingsPanel();
     }
 
     // ── Auth + Init ───────────────────────────────────────────────────
@@ -2465,6 +3181,299 @@
 
     // Poll badge sync every 2s
     setInterval(syncBnavBadge, 2000);
+
+    // ══════════════════════════════════════════════════════════
+    //  SETTINGS PANEL
+    // ══════════════════════════════════════════════════════════
+
+    function switchSettingsTab(tab, el) {
+      document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+      if (el) el.classList.add('active');
+      const sec = document.getElementById('stab-' + tab);
+      if (sec) sec.classList.add('active');
+    }
+
+    function initSettingsPanel() {
+      if (!_user) return;
+      // Profile tab
+      const name = _user.group_name || _user.name || 'Student';
+      const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const avatarEl = document.getElementById('settings-avatar');
+      if (avatarEl) avatarEl.textContent = initials;
+      const dnEl = document.getElementById('settings-display-name');
+      if (dnEl) dnEl.textContent = name;
+      const emEl = document.getElementById('settings-email');
+      if (emEl) emEl.textContent = _user.email || '—';
+      const sinfoName = document.getElementById('sinfo-name');
+      if (sinfoName) sinfoName.textContent = name;
+      const sinfoEmail = document.getElementById('sinfo-email');
+      if (sinfoEmail) sinfoEmail.textContent = _user.email || '—';
+      const sinfoAdv = document.getElementById('sinfo-adviser');
+      if (sinfoAdv) sinfoAdv.textContent = _user.adviser_name || 'Not assigned';
+      const sinfoCoAdv = document.getElementById('sinfo-coadviser');
+      if (sinfoCoAdv) sinfoCoAdv.textContent = _user.co_adviser_name || 'None';
+
+      // Appearance: sync current theme buttons
+      const curTheme = localStorage.getItem('defensched-theme') || 'light';
+      syncThemeButtons(curTheme);
+
+      // Appearance: sync accent color
+      const savedColor = localStorage.getItem('defensched-accent') || '#6d28d9';
+      document.querySelectorAll('.theme-swatch').forEach(sw => {
+        sw.classList.toggle('active', sw.dataset.color === savedColor);
+      });
+
+      // Appearance: font size
+      const savedFs = localStorage.getItem('defensched-fontsize') || 'medium';
+      ['sm','md','lg'].forEach(s => document.getElementById('fs-' + s)?.classList.remove('active'));
+      const fsMap = { small: 'sm', medium: 'md', large: 'lg' };
+      document.getElementById('fs-' + (fsMap[savedFs] || 'md'))?.classList.add('active');
+
+      // Appearance: density
+      const savedDensity = localStorage.getItem('defensched-density') || 'comfortable';
+      document.getElementById('density-compact')?.classList.toggle('active', savedDensity === 'compact');
+      document.getElementById('density-comfortable')?.classList.toggle('active', savedDensity === 'comfortable');
+
+      // Load defense prefs from localStorage
+      const prefTime = localStorage.getItem('defensched-pref-time') || '';
+      const prefNotes = localStorage.getItem('defensched-pref-notes') || '';
+      const prefTimeEl = document.getElementById('pref-time');
+      if (prefTimeEl) prefTimeEl.value = prefTime;
+      const prefNotesEl = document.getElementById('pref-notes');
+      if (prefNotesEl) prefNotesEl.value = prefNotes;
+
+      // Load venue list into preference dropdown
+      loadVenuesForPrefs();
+
+      // Load notification prefs
+      const nPrefs = JSON.parse(localStorage.getItem('defensched-notif-prefs') || '{}');
+      ['notif-defense','notif-approval','notif-rejection','notif-reminder','notif-inapp'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = nPrefs[id] !== false; // default true
+      });
+
+      // Load privacy prefs
+      const pPrefs = JSON.parse(localStorage.getItem('defensched-privacy-prefs') || '{}');
+      const privContact = document.getElementById('priv-contact');
+      if (privContact) privContact.checked = pPrefs['priv-contact'] === true;
+      const privAdviser = document.getElementById('priv-adviser');
+      if (privAdviser) privAdviser.checked = pPrefs['priv-adviser'] !== false;
+      const privConsent = document.getElementById('priv-consent');
+      if (privConsent) privConsent.checked = pPrefs['priv-consent'] !== false;
+
+      // Session info
+      const sessionDev = document.getElementById('session-device');
+      if (sessionDev) sessionDev.textContent = navigator.userAgent.includes('Mobile') ? 'Mobile Browser' : 'Desktop Browser';
+
+      // Password strength listener
+      const pwNew = document.getElementById('pw-new');
+      if (pwNew) {
+        pwNew.addEventListener('input', updatePasswordStrength);
+      }
+      const pwConfirm = document.getElementById('pw-confirm');
+      if (pwConfirm) {
+        pwConfirm.addEventListener('input', updatePasswordMatch);
+      }
+    }
+
+    async function loadVenuesForPrefs() {
+      try {
+        const r = await fetch('/api/venues');
+        if (!r.ok) return;
+        const { venues } = await r.json();
+        const sel = document.getElementById('pref-venue');
+        if (!sel) return;
+        const savedVenue = localStorage.getItem('defensched-pref-venue') || '';
+        sel.innerHTML = '<option value="">No preference</option>' +
+          venues.map(v => `<option value="${v.id}" ${String(v.id) === savedVenue ? 'selected' : ''}>${v.name}</option>`).join('');
+      } catch(e) {}
+    }
+
+    // ── Change Password ────────────────────────────────────────────────
+    function togglePwVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isText = input.type === 'text';
+      input.type = isText ? 'password' : 'text';
+      btn.innerHTML = isText
+        ? '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>'
+        : '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" stroke-width="2" stroke-linecap="round"/></svg>';
+    }
+
+    function updatePasswordStrength() {
+      const pw = document.getElementById('pw-new')?.value || '';
+      const bar = document.getElementById('pw-strength-bar');
+      const label = document.getElementById('pw-strength-label');
+      if (!bar || !label) return;
+      bar.style.display = pw.length > 0 ? '' : 'none';
+      if (!pw.length) return;
+      let score = 0;
+      if (pw.length >= 6) score++;
+      if (pw.length >= 10) score++;
+      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
+      const colors = ['#dc2626','#ea580c','#ca8a04','#16a34a'];
+      const labels = ['Too weak','Weak','Good','Strong'];
+      for (let i = 1; i <= 4; i++) {
+        const seg = document.getElementById(`pwsb-${i}`);
+        if (seg) seg.style.background = i <= score ? colors[score - 1] : 'var(--border2)';
+      }
+      label.textContent = labels[score - 1] || '';
+      label.style.color = colors[score - 1] || 'var(--text3)';
+    }
+
+    function updatePasswordMatch() {
+      const pw = document.getElementById('pw-new')?.value || '';
+      const confirm = document.getElementById('pw-confirm')?.value || '';
+      const hint = document.getElementById('pw-match-hint');
+      if (!hint || !confirm) { if(hint) hint.style.display='none'; return; }
+      hint.style.display = '';
+      if (pw === confirm) {
+        hint.textContent = '✓ Passwords match';
+        hint.style.color = 'var(--success)';
+      } else {
+        hint.textContent = '✗ Passwords do not match';
+        hint.style.color = 'var(--danger)';
+      }
+    }
+
+    async function changePassword() {
+      const current = document.getElementById('pw-current')?.value.trim();
+      const newPw   = document.getElementById('pw-new')?.value.trim();
+      const confirm = document.getElementById('pw-confirm')?.value.trim();
+
+      if (!current || !newPw || !confirm) {
+        showToast('Please fill in all password fields.', 'error'); return;
+      }
+      if (newPw.length < 6) {
+        showToast('New password must be at least 6 characters.', 'error'); return;
+      }
+      if (newPw !== confirm) {
+        showToast('New passwords do not match.', 'error'); return;
+      }
+
+      const btn = document.getElementById('pw-save-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+      try {
+        const r = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current_password: current, new_password: newPw })
+        });
+        const d = await r.json();
+        if (r.ok) {
+          showToast('Password changed successfully!', 'success');
+          document.getElementById('pw-current').value = '';
+          document.getElementById('pw-new').value = '';
+          document.getElementById('pw-confirm').value = '';
+          document.getElementById('pw-strength-bar').style.display = 'none';
+          document.getElementById('pw-match-hint').style.display = 'none';
+        } else {
+          showToast(d.error || 'Failed to change password.', 'error');
+        }
+      } catch { showToast('Server error. Please try again.', 'error'); }
+      finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-width="2"/><polyline points="17 21 17 13 7 13 7 21" stroke-width="2"/><polyline points="7 3 7 8 15 8" stroke-width="2"/></svg> Save New Password'; }
+      }
+    }
+
+    // ── Appearance Settings ────────────────────────────────────────────
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('defensched-theme', theme);
+      updateThemeIcon(theme);
+      syncThemeButtons(theme);
+    }
+
+    function syncThemeButtons(theme) {
+      const lightBtn = document.getElementById('theme-light-btn');
+      const darkBtn  = document.getElementById('theme-dark-btn');
+      if (lightBtn) lightBtn.classList.toggle('active', theme === 'light');
+      if (darkBtn)  darkBtn.classList.toggle('active', theme === 'dark');
+    }
+
+    function setAccentColor(color, color2, el) {
+      document.documentElement.style.setProperty('--accent', color);
+      document.documentElement.style.setProperty('--accent2', color2);
+      const lightColor = color + '1a';
+      document.documentElement.style.setProperty('--accent-light', lightColor);
+      localStorage.setItem('defensched-accent', color);
+      localStorage.setItem('defensched-accent2', color2);
+      document.querySelectorAll('.theme-swatch').forEach(sw => sw.classList.remove('active'));
+      if (el) el.classList.add('active');
+      showToast('Accent color updated!', 'success');
+    }
+
+    function setFontSize(size, el) {
+      const sizeMap = { small: '12px', medium: '14px', large: '16px' };
+      document.body.style.fontSize = sizeMap[size] || '14px';
+      localStorage.setItem('defensched-fontsize', size);
+      document.querySelectorAll('.font-size-btn').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+    }
+
+    function setDensity(density, el) {
+      const root = document.documentElement;
+      if (density === 'compact') {
+        root.style.setProperty('--card-padding', '12px 14px');
+        root.style.setProperty('--nav-padding', '6px 10px');
+      } else {
+        root.style.setProperty('--card-padding', '18px 20px');
+        root.style.setProperty('--nav-padding', '9px 10px');
+      }
+      localStorage.setItem('defensched-density', density);
+      document.querySelectorAll('.view-mode-btn[id^=density]').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+      showToast(`Density set to ${density}.`, 'success');
+    }
+
+    // ── Notification prefs ─────────────────────────────────────────────
+    function saveNotifPrefs() {
+      const prefs = {};
+      ['notif-defense','notif-approval','notif-rejection','notif-reminder','notif-inapp'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) prefs[id] = el.checked;
+      });
+      localStorage.setItem('defensched-notif-prefs', JSON.stringify(prefs));
+      showToast('Notification preferences saved.', 'success');
+    }
+
+    // ── Defense prefs ──────────────────────────────────────────────────
+    function saveDefensePrefs() {
+      const time = document.getElementById('pref-time')?.value || '';
+      const venue = document.getElementById('pref-venue')?.value || '';
+      const notes = document.getElementById('pref-notes')?.value || '';
+      localStorage.setItem('defensched-pref-time', time);
+      localStorage.setItem('defensched-pref-venue', venue);
+      localStorage.setItem('defensched-pref-notes', notes);
+    }
+
+    // ── Privacy prefs ──────────────────────────────────────────────────
+    function savePrivacyPrefs() {
+      const prefs = {};
+      ['priv-contact','priv-adviser','priv-consent'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) prefs[id] = el.checked;
+      });
+      localStorage.setItem('defensched-privacy-prefs', JSON.stringify(prefs));
+      showToast('Privacy settings saved.', 'success');
+    }
+
+    // ── Restore saved appearance on page load ──────────────────────────
+    (function restoreAppearance() {
+      const savedColor  = localStorage.getItem('defensched-accent');
+      const savedColor2 = localStorage.getItem('defensched-accent2');
+      if (savedColor)  document.documentElement.style.setProperty('--accent', savedColor);
+      if (savedColor2) document.documentElement.style.setProperty('--accent2', savedColor2);
+      if (savedColor)  document.documentElement.style.setProperty('--accent-light', savedColor + '1a');
+
+      const savedFs = localStorage.getItem('defensched-fontsize');
+      const sizeMap = { small: '12px', medium: '14px', large: '16px' };
+      if (savedFs) document.body.style.fontSize = sizeMap[savedFs] || '14px';
+    })();
+
   </script>
 </body>
 
