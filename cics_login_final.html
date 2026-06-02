@@ -119,8 +119,8 @@
 
       <!-- Role selector -->
       <select id="reg-role" onchange="regRoleChange()" style="width:100%;padding:9px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#f3f4f8;color:#333;outline:none;cursor:pointer;">
-        <option value="student">&#127891; Thesis Student</option>
-        <option value="faculty">&#128218; Faculty (Adviser / Panelist)</option>
+        <option value="student">&#127891; Student</option>
+        <option value="faculty">&#128218; Faculty </option>
       </select>
 
       <input type="text" id="reg-name" placeholder="Full Name"/>
@@ -144,9 +144,6 @@
           <select id="reg-group-size" onchange="buildMemberFields()" style="width:100%;padding:9px 12px;margin-bottom:10px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;background:#f3f4f8;color:#333;outline:none;">
             <option value="2">2 members</option>
             <option value="3">3 members</option>
-            <option value="4">4 members</option>
-            <option value="5">5 members</option>
-            <option value="6">6 members</option>
           </select>
           <input type="text" id="reg-leader" placeholder="Team Leader Full Name" style="margin-bottom:6px;"/>
           <div id="reg-members-container"></div>
@@ -185,12 +182,12 @@
     <div class="toggle">
       <div class="toggle-panel toggle-left">
         <h1>Welcome Back!</h1>
-        <p>Enter your credentials to access your account and continue your journey.</p>
+        <p>Enter your credentials to access your account.</p>
         <button id="login">Sign In</button>
       </div>
       <div class="toggle-panel toggle-right">
         <h1>Hello, CICSmarter!</h1>
-        <p>"Every line of code starts with a single log in." Register to unlock all features.</p>
+        <p>"Every line of code starts with a single log in."</p>
         <button id="register">Sign Up</button>
       </div>
     </div>

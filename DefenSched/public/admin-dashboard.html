@@ -1732,7 +1732,7 @@
       <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="edit-name"
           placeholder="e.g. Dr. Jose Reyes"></div>
       <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="edit-email"
-          type="email" placeholder="user@cics.edu.ph"></div>
+          type="email" placeholder="user@s.msumain.edu.ph"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="form-group"><label class="form-label">Role</label><select class="form-select" id="edit-role"
             onchange="toggleGroupField()">
@@ -1806,7 +1806,7 @@
       <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="cu-name"
           placeholder="Full name"></div>
       <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input"
-          id="cu-email" placeholder="email@cics.edu.ph"></div>
+          id="cu-email" placeholder="user@s.msumain.edu.ph"></div>
       <div class="form-group" id="cu-groupname-wrap"><label class="form-label">Group Name (for student)</label><input
           type="text" class="form-input" id="cu-groupname" placeholder="e.g. Group Gamma"></div>
       <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input"
@@ -2843,7 +2843,7 @@
       const password = document.getElementById('edit-password').value;
       const status = document.getElementById('edit-status').value;
       if (!name || !email) { showToast('Name and email required', 'error'); return }
-      if (!/^[^\s@]+@cics\.edu\.ph$/i.test(email)) { showToast('Only @cics.edu.ph email addresses are allowed.', 'error'); return }
+      if (!/^[^\s@]+@s\.msumain\.edu\.ph$/i.test(email)) { showToast('Only @s.msumain.edu.ph email addresses are allowed.', 'error'); return }
       if (!id && !password) { showToast('Password required for new users', 'error'); return }
       const body = { name, email, role, group_name: role === 'student' ? group : null, is_active: parseInt(status) };
       if (password) body.password = password;
@@ -2881,7 +2881,7 @@
     async function submitCreateUser() {
       const name = document.getElementById('cu-name').value.trim(), email = document.getElementById('cu-email').value.trim(), password = document.getElementById('cu-password').value, role = document.getElementById('cu-role').value, group_name = role === 'student' ? document.getElementById('cu-groupname').value.trim() : null;
       if (!name || !email || !password) { showToast('All fields required', 'error'); return }
-      if (!/^[^\s@]+@cics\.edu\.ph$/i.test(email)) { showToast('Only @cics.edu.ph email addresses are allowed.', 'error'); return }
+      if (!/^[^\s@]+@s\.msumain\.edu\.ph$/i.test(email)) { showToast('Only @s.msumain.edu.ph email addresses are allowed.', 'error'); return }
       const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password, role, group_name }) });
       if (res.ok) { closeModal('create-user-modal'); showToast('Account created', 'success'); await refresh() } else { const d = await res.json(); showToast(d.error || 'Failed', 'error') }
     }

@@ -574,11 +574,11 @@
 
         <input type="text" id="reg-name" placeholder="Full Name" />
         <input type="email" id="reg-email"
-          placeholder="yourname@cics.edu.ph"
-          pattern=".+@cics\.edu\.ph"
-          title="Must be a @cics.edu.ph email address" />
+          placeholder="yourname@s.msumain.edu.ph"
+          pattern=".+@s\.msumain\.edu\.ph"
+          title="Must be a @s.msumain.edu.ph email address" />
         <p style="font-size:10.5px;color:#888;margin:-6px 0 6px;text-align:left;">
-          <i class="fa-solid fa-circle-info" style="color:#6d8ef0;margin-right:4px;"></i>Only <strong>@cics.edu.ph</strong> emails are accepted.
+          <i class="fa-solid fa-circle-info" style="color:#6d8ef0;margin-right:4px;"></i>Only <strong>@s.msumain.edu.ph</strong> emails are accepted.
         </p>
         <div class="pw-wrap">
           <input type="password" id="reg-password" placeholder="Password" />
@@ -798,8 +798,8 @@
       }
 
       // Enforce institutional email domain
-      if (!email.toLowerCase().endsWith('@cics.edu.ph')) {
-        alert('Only @cics.edu.ph email addresses are allowed to register.');
+      if (!email.toLowerCase().endsWith('@s.msumain.edu.ph')) {
+        alert('Only @s.msumain.edu.ph email addresses are allowed to register.');
         document.getElementById('reg-email').focus();
         return;
       }

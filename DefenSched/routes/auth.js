@@ -16,19 +16,16 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ error: 'Only @s.msumain.edu.ph email addresses are allowed to register.' });
 
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
   if (!passwordRegex.test(password)) {
   return res.status(400).json({ error: 'Password must be at least 8 characters long and include at least one uppercase letter and one number.' });
   }
 
   const nameRegex = /^[a-zA-Z\s\-\.]+$/;
-
   if (!nameRegex.test(name)) {
   return res.status(400).json({ error: 'Name contains invalid characters. Use only letters, spaces, hyphens, or periods.' });
   }
 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
   if (!emailRegex.test(email)) {
   return res.status(400).json({ error: 'Invalid email format. Please provide a valid email address.' });
   }
