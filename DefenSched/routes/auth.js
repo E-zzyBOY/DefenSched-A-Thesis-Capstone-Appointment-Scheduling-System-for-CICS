@@ -12,8 +12,8 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ error: 'All fields are required.' });
 
   // Enforce institutional email domain
-  if (!email.toLowerCase().trim().endsWith('@cics.edu.ph'))
-    return res.status(400).json({ error: 'Only @cics.edu.ph email addresses are allowed to register.' });
+  if (!email.toLowerCase().trim().endsWith('@s.msumain.edu.ph'))
+    return res.status(400).json({ error: 'Only @s.msumain.edu.ph email addresses are allowed to register.' });
 
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{8,}$/;
   if (!passwordRegex.test(password)) {
@@ -24,11 +24,7 @@ router.post('/register', (req, res) => {
   if (!nameRegex.test(name)) {
   return res.status(400).json({ error: 'Name contains invalid characters. Use only letters, spaces, hyphens, or periods.' });
   }
-
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!emailRegex.test(email)) {
-  return res.status(400).json({ error: 'Invalid email format. Please provide a valid email address.' });
-  }
+  
   // Build members JSON for group student accounts
   let membersJson = null;
   let isGroup = 0;
