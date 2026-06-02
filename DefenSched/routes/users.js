@@ -8,7 +8,7 @@ const { requireAuth, requireActive, requireRole } = require('../middleware/auth'
 
 // ── Email domain validator ──────────────────────────────────
 function isValidCicsEmail(email) {
-  return /^[^\s@]+@cics\.edu\.ph$/i.test(email.trim());
+  return /^[^\s@]+@s\.msumain\.edu\.ph$/i.test(email.trim());
 }
 
 // GET /api/users — admin: all users; faculty/student: self only
@@ -42,7 +42,7 @@ router.post('/', requireRole('admin'), (req, res) => {
     return res.status(400).json({ error: 'name, email, password, and role are required.' });
 
   if (!isValidCicsEmail(email))
-    return res.status(400).json({ error: 'Invalid email. Only @cics.edu.ph addresses are allowed.' });
+    return res.status(400).json({ error: 'Invalid email. Only @s.msumain.edu.ph addresses are allowed.' });
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase().trim());
   if (existing) return res.status(409).json({ error: 'Email already in use.' });
@@ -63,7 +63,7 @@ router.put('/:id', requireRole('admin'), (req, res) => {
   if (name)       updates.name       = name;
   if (email) {
     if (!isValidCicsEmail(email))
-      return res.status(400).json({ error: 'Invalid email. Only @cics.edu.ph addresses are allowed.' });
+      return res.status(400).json({ error: 'Invalid email. Only @s.msumain.edu.ph addresses are allowed.' });
     updates.email = email.toLowerCase().trim();
   }
   if (role)       updates.role       = role;
